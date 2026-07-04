@@ -15,7 +15,7 @@ import { createTrainer } from '@/core/trainer'
 import { createProgressStore } from '@/core/storage'
 import type { Progress, ProgressStore, Streak } from '@/core/storage/types'
 import { PracticeScreen } from '@/ui/PracticeScreen'
-import { I18nProvider } from '@/i18n'
+import { I18nProvider, useT } from '@/i18n'
 import type { RoundSummary } from '@/ui/useTrainerSession'
 import { mergeSessionIntoProgress } from '@/app/progress'
 import { DEFAULT_TRAINER } from '@/app/config'
@@ -156,9 +156,9 @@ function App() {
 
   if (!trainer) {
     return (
-      <div className="grid h-full place-items-center">
-        <span className="font-mono text-sm text-muted">loading…</span>
-      </div>
+      <I18nProvider locale={settings.locale}>
+        <LoadingScreen />
+      </I18nProvider>
     )
   }
 
@@ -180,6 +180,16 @@ function App() {
         onClearHistory={handleClearHistory}
       />
     </I18nProvider>
+  )
+}
+
+function LoadingScreen() {
+  const t = useT()
+
+  return (
+    <div className="grid h-full place-items-center">
+      <span className="font-mono text-sm text-muted">{t('app.loading')}</span>
+    </div>
   )
 }
 

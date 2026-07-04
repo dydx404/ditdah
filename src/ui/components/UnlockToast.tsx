@@ -4,6 +4,7 @@
  */
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { useT } from '@/i18n'
 
 interface UnlockToastProps {
   char: string | null
@@ -11,6 +12,8 @@ interface UnlockToastProps {
 }
 
 export function UnlockToast({ char, onDismiss }: UnlockToastProps) {
+  const t = useT()
+
   useEffect(() => {
     if (!char) return
     const t = setTimeout(onDismiss, 2600)
@@ -26,7 +29,7 @@ export function UnlockToast({ char, onDismiss }: UnlockToastProps) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -12, opacity: 0 }}
         >
-          new character unlocked — <span className="font-bold">{char}</span>
+          {t('summary.unlocked', { chars: char })}
         </motion.div>
       )}
     </AnimatePresence>

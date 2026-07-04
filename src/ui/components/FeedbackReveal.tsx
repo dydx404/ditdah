@@ -6,12 +6,14 @@
  */
 import { motion } from 'motion/react'
 import type { AnswerResult } from '@/core/trainer/types'
+import { useT } from '@/i18n'
 
 interface FeedbackRevealProps {
   result: AnswerResult
 }
 
 export function FeedbackReveal({ result }: FeedbackRevealProps) {
+  const t = useT()
   const correct = result.correct
   return (
     <motion.div
@@ -34,12 +36,13 @@ export function FeedbackReveal({ result }: FeedbackRevealProps) {
         </span>
       </div>
       {correct ? (
-        <p className="font-mono text-sm text-accent">✓ nice</p>
+        <p className="font-mono text-sm text-accent">{t('feedback.nice')}</p>
       ) : (
         <p className="font-mono text-sm text-muted">
-          you typed{' '}
-          <span className="text-error">{result.received || '—'}</span> — that was{' '}
-          <span className="text-text">{result.expected}</span>
+          {t('feedback.youTypedExpected', {
+            got: result.received || '—',
+            expected: result.expected,
+          })}
         </p>
       )}
     </motion.div>

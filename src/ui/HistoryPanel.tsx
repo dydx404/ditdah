@@ -1,4 +1,5 @@
 import type { RoundRecord } from '@/app/history'
+import { useT } from '@/i18n'
 
 interface HistoryPanelProps {
   open: boolean
@@ -13,6 +14,8 @@ export function HistoryPanel({
   onClose,
   onClear,
 }: HistoryPanelProps) {
+  const t = useT()
+
   if (!open) {
     return null
   }
@@ -21,24 +24,26 @@ export function HistoryPanel({
     <div className="fixed inset-0 z-30">
       <button
         type="button"
-        aria-label="Close history"
+        aria-label={t('action.closeHistory')}
         className="absolute inset-0 h-full w-full cursor-default bg-bg/70"
         onClick={onClose}
       />
       <aside
-        aria-label="History"
+        aria-label={t('history.title')}
         className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col border-l border-border bg-surface p-5 shadow-2xl"
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h2 className="font-mono text-lg font-semibold text-text">History</h2>
+            <h2 className="font-mono text-lg font-semibold text-text">
+              {t('history.title')}
+            </h2>
             <p className="mt-1 text-sm text-muted">
-              Recent rounds stay on this device
+              {t('history.subtitle')}
             </p>
           </div>
           <button
             type="button"
-            aria-label="Close history"
+            aria-label={t('action.closeHistory')}
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
           >
@@ -49,7 +54,7 @@ export function HistoryPanel({
         {history.length === 0 ? (
           <div className="grid flex-1 place-items-center text-center">
             <p className="max-w-48 text-sm text-muted">
-              Finish a round to start your history
+              {t('history.empty')}
             </p>
           </div>
         ) : (
@@ -65,7 +70,7 @@ export function HistoryPanel({
                       dateTime={record.at}
                       className="font-mono text-xs text-muted"
                     >
-                      {formatRoundTime(record.at)}
+                      {formatRoundTime(record.at, t('history.unknownTime'))}
                     </time>
                     <span className="font-mono text-xs tabular-nums text-accent">
                       {Math.round(record.accuracy * 100)}%
@@ -73,7 +78,9 @@ export function HistoryPanel({
                   </div>
                   <div
                     className="mb-3 h-1.5 overflow-hidden rounded-full bg-border"
-                    aria-label={`Accuracy ${Math.round(record.accuracy * 100)}%`}
+                    aria-label={t('history.accuracy', {
+                      percent: Math.round(record.accuracy * 100),
+                    })}
                   >
                     <div
                       className="h-full rounded-full bg-accent"
@@ -81,9 +88,12 @@ export function HistoryPanel({
                     />
                   </div>
                   <dl className="grid grid-cols-3 gap-3 font-mono text-xs">
-                    <RoundStat label="copied" value={String(record.total)} />
-                    <RoundStat label="correct" value={String(record.correct)} />
-                    <RoundStat label="wpm" value={String(record.effectiveWpm)} />
+                    <RoundStat label={t('stats.copied')} value={String(record.total)} />
+                    <RoundStat
+                      label={t('stats.correct')}
+                      value={String(record.correct)}
+                    />
+                    <RoundStat label={t('stats.wpm')} value={String(record.effectiveWpm)} />
                   </dl>
                 </li>
               ))}
@@ -94,7 +104,7 @@ export function HistoryPanel({
                 onClick={onClear}
                 className="mt-5 rounded-md border border-border px-3 py-2 font-mono text-sm text-muted transition hover:text-text"
               >
-                Clear history
+                {t('action.clearHistory')}
               </button>
             )}
           </>
@@ -113,10 +123,10 @@ function RoundStat({ label, value }: { label: string; value: string }) {
   )
 }
 
-function formatRoundTime(iso: string): string {
+function formatRoundTime(iso: string, unknownTime: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) {
-    return 'unknown time'
+    return unknownTime
   }
 
   return new Intl.DateTimeFormat(undefined, {

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { SummaryScreen } from './SummaryScreen'
 import type { RoundSummary } from '../useTrainerSession'
+import { I18nProvider } from '@/i18n'
 
 const summary: RoundSummary = {
   total: 10,
@@ -46,5 +47,16 @@ describe('SummaryScreen', () => {
     )
     expect(screen.getByText('100%')).toBeInTheDocument()
     expect(screen.queryByText(/keep working on/)).not.toBeInTheDocument()
+  })
+
+  it('renders Chinese copy under a zh provider', () => {
+    render(
+      <I18nProvider locale="zh">
+        <SummaryScreen summary={summary} onAgain={() => {}} />
+      </I18nProvider>,
+    )
+
+    expect(screen.getByText('本轮完成')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '再练一轮' })).toBeInTheDocument()
   })
 })

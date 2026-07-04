@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { HistoryPanel } from './HistoryPanel'
 import type { RoundRecord } from '@/app/history'
+import { I18nProvider } from '@/i18n'
 
 const history: RoundRecord[] = [
   {
@@ -66,5 +67,18 @@ describe('HistoryPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /clear history/i }))
     expect(onClear).toHaveBeenCalledOnce()
+  })
+
+  it('renders Chinese panel copy under a zh provider', () => {
+    render(
+      <I18nProvider locale="zh">
+        <HistoryPanel open history={[]} onClose={() => {}} />
+      </I18nProvider>,
+    )
+
+    expect(
+      screen.getByRole('complementary', { name: '历史记录' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('完成一轮后会开始记录历史')).toBeInTheDocument()
   })
 })

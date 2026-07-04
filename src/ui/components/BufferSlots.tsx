@@ -5,17 +5,20 @@
  * caret on the next slot. It never shows the prompt itself — only your own
  * keystrokes — so it stays sound-first: you still decode the group by ear.
  */
+import { useT } from '@/i18n'
+
 interface BufferSlotsProps {
   length: number
   value: string
 }
 
 export function BufferSlots({ length, value }: BufferSlotsProps) {
+  const t = useT()
   const active = value.length
   return (
     <div
       className="flex items-center justify-center gap-2"
-      aria-label="Your copy so far"
+      aria-label={t('buffer.aria')}
     >
       {Array.from({ length }, (_, i) => {
         const ch = value[i] ?? ''

@@ -6,12 +6,14 @@
  * only — never dots/dashes.
  */
 import type { AnswerResult } from '@/core/trainer/types'
+import { useT } from '@/i18n'
 
 interface GroupFeedbackProps {
   result: AnswerResult
 }
 
 export function GroupFeedback({ result }: GroupFeedbackProps) {
+  const t = useT()
   const perChar = result.perChar ?? []
   return (
     <div className="flex flex-col items-center gap-4">
@@ -31,11 +33,10 @@ export function GroupFeedback({ result }: GroupFeedbackProps) {
         ))}
       </div>
       {result.correct ? (
-        <p className="font-mono text-sm text-accent">✓ clean copy</p>
+        <p className="font-mono text-sm text-accent">{t('feedback.cleanCopy')}</p>
       ) : (
         <p className="font-mono text-sm text-muted">
-          you typed{' '}
-          <span className="text-error">{result.received || '—'}</span>
+          {t('feedback.youTyped', { got: result.received || '—' })}
         </p>
       )}
     </div>

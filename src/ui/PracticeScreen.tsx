@@ -32,6 +32,8 @@ interface PracticeScreenProps {
   settings: Settings
   onSettingsChange: (settings: Settings) => void
   roundLength: number
+  gateOnMiss: boolean
+  answerSounds: boolean
   /** Current daily streak (consecutive days practiced). */
   streak?: number
   /** Recent completed rounds, newest first. */
@@ -50,6 +52,8 @@ export function PracticeScreen({
   settings,
   onSettingsChange,
   roundLength,
+  gateOnMiss,
+  answerSounds,
   streak,
   history = [],
   onAnswered,
@@ -61,6 +65,8 @@ export function PracticeScreen({
     engine,
     timing,
     roundLength,
+    gateOnMiss,
+    sounds: answerSounds,
     onAnswered,
     onRoundComplete,
   })

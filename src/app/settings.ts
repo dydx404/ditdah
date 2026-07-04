@@ -8,6 +8,10 @@ export interface Settings {
   readonly toneHz: number
   readonly volume: number
   readonly roundLength: number
+  /** Keep a missed prompt gated until the learner echoes it correctly. */
+  readonly strictGate: boolean
+  /** Play short correct/wrong UI answer cues. */
+  readonly answerSounds: boolean
   /**
    * Show visual dit/dah patterns in the character reference. Default OFF: the
    * sound-first default never puts a dot/dash chart in front of the learner
@@ -20,6 +24,8 @@ export const DEFAULT_SETTINGS: Settings = {
   ...DEFAULT_TIMING,
   volume: 0.7,
   roundLength: 25,
+  strictGate: true,
+  answerSounds: true,
   showPatterns: false,
 }
 
@@ -89,6 +95,8 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
       5,
       100,
     ),
+    strictGate: value.strictGate !== false,
+    answerSounds: value.answerSounds !== false,
     showPatterns: value.showPatterns === true,
   }
 }

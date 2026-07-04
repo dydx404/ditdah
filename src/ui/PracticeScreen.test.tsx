@@ -35,6 +35,8 @@ describe('PracticeScreen', () => {
         settings={DEFAULT_SETTINGS}
         onSettingsChange={() => {}}
         roundLength={DEFAULT_SETTINGS.roundLength}
+        gateOnMiss={DEFAULT_SETTINGS.strictGate}
+        answerSounds={DEFAULT_SETTINGS.answerSounds}
       />,
     )
 

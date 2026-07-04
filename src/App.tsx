@@ -137,6 +137,8 @@ function App() {
       settings={settings}
       onSettingsChange={handleSettingsChange}
       roundLength={settings.roundLength}
+      gateOnMiss={settings.strictGate}
+      answerSounds={settings.answerSounds}
       streak={streakCount}
       history={history}
       onAnswered={handleAnswered}

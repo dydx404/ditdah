@@ -10,7 +10,7 @@ import type { AnswerResult, Trainer } from '@/core/trainer/types'
 const timing: TimingConfig = { charWpm: 20, effectiveWpm: 10, toneHz: 600 }
 
 function makeFakeEngine() {
-  const calls = { play: 0, resume: 0, stop: 0 }
+  const calls = { play: 0, cue: 0, resume: 0, stop: 0 }
   const engine: ToneEngine = {
     resume: () => {
       calls.resume += 1
@@ -20,7 +20,10 @@ function makeFakeEngine() {
       calls.play += 1
       return { done: Promise.resolve(), stop: () => {} }
     },
-    cue: () => Promise.resolve(),
+    cue: () => {
+      calls.cue += 1
+      return Promise.resolve()
+    },
     stop: () => {
       calls.stop += 1
     },
@@ -94,6 +97,9 @@ function press(key: string) {
 interface SetupOptions {
   trainer?: Trainer
   roundLength?: number
+  wrongHoldMs?: number
+  gateOnMiss?: boolean
+  sounds?: boolean
   onAnswered?: (r: AnswerResult) => void
   onRoundComplete?: (r: unknown) => void
 }
@@ -112,6 +118,9 @@ describe('useTrainerSession', () => {
         timing,
         roundLength: opts.roundLength,
         correctHoldMs: 100,
+        wrongHoldMs: opts.wrongHoldMs,
+        gateOnMiss: opts.gateOnMiss,
+        sounds: opts.sounds,
         onAnswered: opts.onAnswered,
         onRoundComplete: opts.onRoundComplete as never,
       }),
@@ -144,6 +153,7 @@ describe('useTrainerSession', () => {
     expect(view.result.current.summary.total).toBe(1)
 
     // hold elapses -> next prompt plays, back to listening
+    expect(calls.cue).toBe(1)
     act(() => vi.advanceTimersByTime(120))
     expect(view.result.current.phase).toBe('listening')
     expect(calls.play).toBeGreaterThan(playsBefore)
@@ -218,6 +228,51 @@ describe('useTrainerSession', () => {
     expect(view.result.current.phase).toBe('feedback')
     act(() => vi.advanceTimersByTime(200))
     expect(view.result.current.phase).toBe('listening')
+  })
+
+  it('skips answer cues when sounds are off', async () => {
+    const { calls, view } = setup({
+      trainer: makeFakeTrainer('K'),
+      sounds: false,
+    })
+    await act(async () => view.result.current.start())
+
+    press('K')
+    expect(view.result.current.phase).toBe('feedback')
+    expect(calls.cue).toBe(0)
+
+    act(() => vi.advanceTimersByTime(120))
+    press('.')
+    expect(view.result.current.phase).toBe('retry')
+    expect(calls.cue).toBe(0)
+  })
+
+  it('can reveal, replay, and auto-advance after a miss when strict gate is off', async () => {
+    const results: AnswerResult[] = []
+    const { calls, view } = setup({
+      trainer: makeFakeTrainer('K'),
+      roundLength: 2,
+      wrongHoldMs: 100,
+      gateOnMiss: false,
+      onAnswered: (r) => results.push(r),
+    })
+    await act(async () => view.result.current.start())
+
+    const playsBefore = calls.play
+    act(() => view.result.current.answer('.'))
+
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.reveal).toBe('K')
+    expect(view.result.current.lastResult?.correct).toBe(false)
+    expect(view.result.current.summary.total).toBe(1)
+    expect(results).toHaveLength(1)
+
+    await act(async () => {})
+    expect(calls.play).toBeGreaterThan(playsBefore)
+
+    act(() => vi.advanceTimersByTime(120))
+    expect(view.result.current.phase).toBe('listening')
+    expect(view.result.current.summary.total).toBe(1)
   })
 
   it('a missed prompt is scored once; the echo is not re-scored', async () => {

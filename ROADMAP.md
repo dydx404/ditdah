@@ -44,6 +44,7 @@ Reasons to come back tomorrow.
 - ✅ PWA (installable, offline) (#23)
 - ✅ Small daily goal (#32)
 - ✅ Configurable round length (#33)
+- ✅ Strict mode + answer-sounds toggles (#34)
 
 ## Phase 3 — Depth 💭
 

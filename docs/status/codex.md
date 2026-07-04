@@ -9,9 +9,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#33 — Configurable round length** (`feat/round-length`): expose the existing
-  `useTrainerSession.roundLength` option through persisted settings. PR #39 is
-  open; local gates passed.
+- **#34 — Strict mode + answer-sounds toggles**
+  (`feat/strict-sound-settings`): add default-on settings for the retry gate and
+  answer cue voice. Touches `useTrainerSession`; keep branch logic surgical.
 
 ## Blocked / waiting
 
@@ -28,5 +28,6 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- #33 merged as PR #39; main CI + Pages deploy were green after merge.
 - Frozen contracts are all implemented; never edit any `core/*/types.ts`.
 - Env: `conda activate nodejs` before npm. Gates: `typecheck && test && lint && build`.

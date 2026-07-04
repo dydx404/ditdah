@@ -6,13 +6,14 @@
  *   idle → (start, needs a user gesture to unlock audio)
  *        → listening (tone plays; the character is NOT shown — sound-first)
  *        → feedback (correct: cue + green flash, then auto-advance)
- *        → retry (miss: buzz + reveal + replay; user must echo it to continue)
+ *        → retry (strict miss: buzz + reveal + replay; user echoes to continue)
  *        → summary (after the last prompt) → (again) → listening → …
  *
- * "Force continue only when passed": a miss doesn't auto-advance. It's scored
- * once (the first attempt), then the learner must type the character back to
- * move on. The retype is a reinforcement rep, not re-scored — otherwise
- * accuracy and unlocks would be trivially gamed.
+ * Strict mode defaults to "force continue only when passed": a miss doesn't
+ * auto-advance. It's scored once (the first attempt), then the learner must type
+ * the character back to move on. The retype is a reinforcement rep, not
+ * re-scored — otherwise accuracy and unlocks would be trivially gamed. If the
+ * gate is off, a miss is still scored once, then revealed/replayed and advanced.
  *
  * Round stats are accumulated here from each AnswerResult, so the trainer stays
  * a pure per-answer scorer. Trainer and ToneEngine are injected for testability.
@@ -21,7 +22,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { renderToElements } from '@/core/morse'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
-import { playCue } from './cues'
+import { playCue, type Cue } from './cues'
 import type {
   AnswerResult,
   CharStat,
@@ -57,8 +58,12 @@ export interface UseTrainerSessionOptions {
   roundLength?: number
   /** How long to hold feedback on a correct answer before the next prompt. */
   correctHoldMs?: number
-  /** @deprecated Misses now gate on an echo instead of auto-advancing. Unused. */
+  /** How long to hold feedback on a miss when gateOnMiss is false. */
   wrongHoldMs?: number
+  /** If true, a miss requires typing the revealed character before continuing. */
+  gateOnMiss?: boolean
+  /** If true, play short correct/wrong UI cues after answers. */
+  sounds?: boolean
   /** Called after each scored answer — the app persists progress here. */
   onAnswered?: (result: AnswerResult) => void
   /** Called once when a round finishes — the app can log it to history. */
@@ -92,6 +97,9 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
   const { trainer, engine, timing, onAnswered, onRoundComplete } = opts
   const roundLength = opts.roundLength ?? DEFAULT_ROUND_LENGTH
   const correctHoldMs = opts.correctHoldMs ?? 450
+  const wrongHoldMs = opts.wrongHoldMs ?? 1200
+  const gateOnMiss = opts.gateOnMiss ?? true
+  const sounds = opts.sounds ?? true
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [lastResult, setLastResult] = useState<AnswerResult | null>(null)
@@ -115,6 +123,11 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       engine.play(renderToElements(text, timing), timing.toneHz)
     },
     [engine, timing],
+  )
+
+  const cue = useCallback(
+    (kind: Cue) => (sounds ? playCue(engine, kind) : { done: Promise.resolve() }),
+    [engine, sounds],
   )
 
   const playNext = useCallback(() => {
@@ -206,21 +219,38 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       if (result.correct) {
         setReveal(null)
         setPhase('feedback')
-        playCue(engine, 'correct')
+        cue('correct')
         if (timerRef.current) clearTimeout(timerRef.current)
         timerRef.current = setTimeout(advance, correctHoldMs)
       } else {
-        // Gate: buzz, reveal the answer, replay it, and wait for the echo.
         const expected = result.expected
         setReveal(expected)
-        retryCharRef.current = expected
-        setPhase('retry')
-        playCue(engine, 'wrong').done.then(() => {
-          if (retryCharRef.current === expected) playTone(expected)
-        })
+        if (gateOnMiss) {
+          // Gate: cue, reveal the answer, replay it, and wait for the echo.
+          retryCharRef.current = expected
+          setPhase('retry')
+          cue('wrong').done.then(() => {
+            if (retryCharRef.current === expected) playTone(expected)
+          })
+        } else {
+          retryCharRef.current = null
+          setPhase('feedback')
+          cue('wrong').done.then(() => playTone(expected))
+          if (timerRef.current) clearTimeout(timerRef.current)
+          timerRef.current = setTimeout(advance, wrongHoldMs)
+        }
       }
     },
-    [trainer, engine, playTone, advance, correctHoldMs, onAnswered],
+    [
+      trainer,
+      playTone,
+      advance,
+      correctHoldMs,
+      wrongHoldMs,
+      gateOnMiss,
+      cue,
+      onAnswered,
+    ],
   )
 
   // The `retry` gate: the char is revealed, so this retype is a reinforcement
@@ -230,7 +260,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       const expected = retryCharRef.current
       if (!expected) return
       if (key.toUpperCase() !== expected) {
-        playCue(engine, 'wrong')
+        cue('wrong')
         return
       }
       retryCharRef.current = null
@@ -238,11 +268,11 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       setLastResult({ correct: true, expected, received: expected, unlocked: null })
       setReveal(null)
       setPhase('feedback')
-      playCue(engine, 'correct')
+      cue('correct')
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(advance, correctHoldMs)
     },
-    [engine, advance, correctHoldMs],
+    [advance, correctHoldMs, cue],
   )
 
   // Capture keys while listening (score) or retrying (echo). Never during the

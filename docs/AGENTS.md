@@ -41,7 +41,7 @@ issue (spec + acceptance criteria)  →  branch  →  PR  →  CI green  →  re
    else. Don't reformat, rename, or "improve" code outside your scope — it
    creates merge conflicts with the other agent's in-flight work.
 2. **Contracts are frozen.** Do not change a `core/*/types.ts` marked frozen
-   (currently `morse`, `audio`, `trainer`). If the contract is wrong, open an
+   (`morse`, `audio`, `trainer`, `storage`). If the contract is wrong, open an
    issue and tag Claude — the fix is a deliberate decision, not an edit.
 3. **Build against the interface, not the implementation.** Import types from
    `types.ts`. Don't reach into another module's internals.

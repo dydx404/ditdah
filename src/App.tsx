@@ -13,7 +13,7 @@ import { WebAudioToneEngine } from '@/core/audio'
 import type { Trainer } from '@/core/trainer/types'
 import { createTrainer } from '@/core/trainer'
 import { createProgressStore } from '@/core/storage'
-import type { Progress, ProgressStore } from '@/core/storage/types'
+import type { Progress, ProgressStore, Streak } from '@/core/storage/types'
 import { PracticeScreen } from '@/ui/PracticeScreen'
 import { mergeSessionIntoProgress } from '@/app/progress'
 import { DEFAULT_TRAINER } from '@/app/config'
@@ -28,6 +28,7 @@ function App() {
 
   // Progress loaded at session start; fixed for the whole session.
   const baseRef = useRef<Progress | null>(null)
+  const streakRef = useRef<Streak | null>(null)
   const [trainer, setTrainer] = useState<Trainer | null>(null)
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const initialSettingsRef = useRef(settings)
@@ -45,6 +46,7 @@ function App() {
     void storeRef.current?.load().then((base) => {
       if (cancelled) return
       baseRef.current = base
+      streakRef.current = base?.streak ?? null
       const initialUnlockCount = Math.max(
         DEFAULT_TRAINER.initialUnlockCount,
         base?.unlocked.length ?? 0,
@@ -78,7 +80,9 @@ function App() {
       baseRef.current,
       trainer.unlockedChars(),
       trainer.summary().perChar,
+      { streak: streakRef.current },
     )
+    streakRef.current = next.streak
     void store.save(next)
   }, [trainer])
 

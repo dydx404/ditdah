@@ -9,8 +9,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#17 — Sound-first character reference** (`feat/character-reference`):
-  PR #18 is open and green; awaiting Benson review/merge.
+- **#19 — Daily streak day-logic** (`feat/streak`): app-layer progress merge
+  updates `Progress.streak` on scored answers without changing frozen contracts.
+  PR #20 is open; local gates passed.
 
 ## Blocked / waiting
 
@@ -18,8 +19,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #17 merges, pull `main`, check open issues, then continue Phase 2 one
-  specced issue at a time.
+- PR #18 (sound-first character reference) has merged to `main`.
+- **#21 — Scope account and cloud sync v0** is open as `needs-spec`; wait for
+  Benson's product/back-end decision before implementing accounts.
 
 ## Open questions
 

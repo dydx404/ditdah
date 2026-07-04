@@ -25,6 +25,7 @@ import { AnswerKeypad } from './components/AnswerKeypad'
 import { UnlockToast } from './components/UnlockToast'
 import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
+import type { AccountState } from './AccountSection'
 import { HistoryPanel } from './HistoryPanel'
 import { roundsToday, type RoundRecord } from '@/app/history'
 import type { RoundSummary } from './useTrainerSession'
@@ -39,6 +40,8 @@ interface PracticeScreenProps {
   roundLength: number
   gateOnMiss: boolean
   answerSounds: boolean
+  /** Cloud account + sync controls (undefined = sync UI hidden). */
+  account?: AccountState
   /** Current daily streak (consecutive days practiced). */
   streak?: number
   /** Recent completed rounds, newest first. */
@@ -59,6 +62,7 @@ export function PracticeScreen({
   roundLength,
   gateOnMiss,
   answerSounds,
+  account,
   streak,
   history = [],
   onAnswered,
@@ -110,6 +114,7 @@ export function PracticeScreen({
         settings={settings}
         onSettingsChange={onSettingsChange}
         onClose={() => setSettingsOpen(false)}
+        account={account}
       />
       <HistoryPanel
         open={historyOpen}

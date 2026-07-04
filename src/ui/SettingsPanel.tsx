@@ -1,12 +1,14 @@
 import type { Settings } from '@/app/settings'
 import { normalizeSettings } from '@/app/settings'
 import { LOCALES, useT } from '@/i18n'
+import { AccountSection, type AccountState } from './AccountSection'
 
 interface SettingsPanelProps {
   open: boolean
   settings: Settings
   onSettingsChange: (settings: Settings) => void
   onClose: () => void
+  account?: AccountState
 }
 
 export function SettingsPanel({
@@ -14,6 +16,7 @@ export function SettingsPanel({
   settings,
   onSettingsChange,
   onClose,
+  account,
 }: SettingsPanelProps) {
   const t = useT()
   if (!open) {
@@ -54,6 +57,7 @@ export function SettingsPanel({
         </div>
 
         <div className="flex flex-col gap-6">
+          {account && <AccountSection {...account} />}
           <div className="flex flex-col gap-2">
             <span className="font-mono text-sm text-muted">
               {t('settings.language')}

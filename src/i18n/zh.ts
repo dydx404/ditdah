@@ -101,4 +101,15 @@ export const zh: Partial<Messages> = {
   'reference.unlocked': '已解锁',
   'reference.upcoming': '待解锁',
   'reference.listen': '播放字符 {char}',
+
+  'account.title': '账户与同步',
+  'account.blurb': '登录以备份进度，并在多设备间同步。',
+  'account.emailPlaceholder': 'you@example.com',
+  'account.sendLink': '发送登录链接',
+  'account.linkSent': '请查收邮件中的登录链接。',
+  'account.signedInAs': '已登录：{email}',
+  'account.signOut': '退出登录',
+  'account.syncing': '同步中…',
+  'account.synced': '已同步',
+  'account.error': '发送失败，请检查邮箱后重试。',
 }

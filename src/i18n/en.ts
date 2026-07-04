@@ -115,6 +115,18 @@ export const en = {
   'reference.unlocked': 'unlocked',
   'reference.upcoming': 'upcoming',
   'reference.listen': 'Listen to character {char}',
+
+  // Account & sync
+  'account.title': 'Account & sync',
+  'account.blurb': 'Sign in to back up your progress and sync it across devices.',
+  'account.emailPlaceholder': 'you@example.com',
+  'account.sendLink': 'Send sign-in link',
+  'account.linkSent': 'Check your email for a sign-in link.',
+  'account.signedInAs': 'Signed in as {email}',
+  'account.signOut': 'Sign out',
+  'account.syncing': 'Syncing…',
+  'account.synced': 'Synced',
+  'account.error': 'Could not send the link. Check the email and try again.',
 } as const
 
 export type MessageKey = keyof typeof en

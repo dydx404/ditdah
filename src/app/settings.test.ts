@@ -37,6 +37,7 @@ describe('settings persistence', () => {
       effectiveWpm: 18,
       toneHz: 720,
       volume: 0.45,
+      showPatterns: true,
     } satisfies Settings
 
     saveSettings(settings)
@@ -44,7 +45,7 @@ describe('settings persistence', () => {
     expect(loadSettings()).toEqual(settings)
   })
 
-  it('clamps out-of-range values on load', () => {
+  it('clamps out-of-range values on load and defaults showPatterns off', () => {
     storage().setItem(
       SETTINGS_KEY,
       JSON.stringify({
@@ -60,7 +61,16 @@ describe('settings persistence', () => {
       effectiveWpm: 5,
       toneHz: 1000,
       volume: 0,
+      showPatterns: false,
     })
+  })
+
+  it('defaults showPatterns off and coerces non-booleans to false', () => {
+    expect(DEFAULT_SETTINGS.showPatterns).toBe(false)
+    expect(normalizeSettings({ showPatterns: 'yes' as never }).showPatterns).toBe(
+      false,
+    )
+    expect(normalizeSettings({ showPatterns: true }).showPatterns).toBe(true)
   })
 
   it('clamps effective speed when character speed is lowered', () => {

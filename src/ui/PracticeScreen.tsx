@@ -143,6 +143,7 @@ export function PracticeScreen({
           unlocked={session.unlocked}
           timing={timing}
           engine={engine}
+          showPatterns={settings.showPatterns}
         />
         <div className="flex items-center justify-center gap-4 px-6 py-4 font-mono text-xs text-muted/70">
           {phase === 'listening' ? (

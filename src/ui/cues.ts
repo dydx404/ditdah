@@ -1,12 +1,12 @@
 /**
  * UI answer cues — short, non-Morse audio feedback on submit.
  *
- * Two-note shapes, played through the engine's `cue()` voice — a warm plucked
- * mallet/bell tone (fast attack, natural decay) pitched away from the sidetone,
- * so cues sound instrument-y (Duolingo-ish) rather than like a beep:
+ * Played through the engine's `cue()` voice — a warm plucked mallet/bell tone
+ * (fast attack, natural decay) pitched away from the sidetone, so cues sound
+ * instrument-y (Duolingo-ish) rather than like a beep:
  *
- *   correct → a bright descending "ding-dong" (a bell/doorbell reward)
- *   wrong   → a low descending "uh-oh"
+ *   correct → a bright descending two-note "ding-dong" (a bell/doorbell reward)
+ *   wrong   → a single low "bong" (one note — plainly not the reward)
  */
 import type { CueNote, ToneEngine } from '@/core/audio/types'
 
@@ -18,11 +18,8 @@ const CORRECT_NOTES: readonly CueNote[] = [
   { hz: 523, ms: 210 }, // "dong"
 ]
 
-/** A blunt low "uh-oh": G3 → D3, clearly negative and well below sidetone. */
-const WRONG_NOTES: readonly CueNote[] = [
-  { hz: 196, ms: 110 },
-  { hz: 147, ms: 240 },
-]
+/** A single low "bong": E3, clearly negative and well below the sidetone. */
+const WRONG_NOTES: readonly CueNote[] = [{ hz: 165, ms: 300 }]
 
 const CUE_NOTES: Record<Cue, readonly CueNote[]> = {
   correct: CORRECT_NOTES,

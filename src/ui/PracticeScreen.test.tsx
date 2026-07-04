@@ -5,6 +5,7 @@ import { PracticeScreen } from './PracticeScreen'
 import { createTrainer } from '@/core/trainer'
 import type { ToneEngine } from '@/core/audio/types'
 import type { TimingConfig } from '@/core/morse/types'
+import { DEFAULT_SETTINGS } from '@/app/settings'
 
 const timing: TimingConfig = { charWpm: 20, effectiveWpm: 10, toneHz: 600 }
 
@@ -25,10 +26,21 @@ describe('PracticeScreen', () => {
       unlockWindow: 5,
       seed: 1,
     })
-    render(<PracticeScreen trainer={trainer} engine={fakeEngine} timing={timing} />)
+    render(
+      <PracticeScreen
+        trainer={trainer}
+        engine={fakeEngine}
+        timing={timing}
+        settings={DEFAULT_SETTINGS}
+        onSettingsChange={() => {}}
+      />,
+    )
 
     expect(
       screen.getByRole('button', { name: /start listening/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /open settings/i }),
     ).toBeInTheDocument()
     // Sound-first: the prompt character is NOT rendered at idle, but the
     // learner's unlocked set (K, M) is shown in the HUD.

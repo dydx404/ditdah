@@ -6,8 +6,9 @@
  * a pure view over the session (and easy to point at the real trainer once #5
  * lands, in place of the dev stub).
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import type { Settings } from '@/app/settings'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
 import type { AnswerResult, Trainer } from '@/core/trainer/types'
@@ -16,11 +17,14 @@ import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
 import { FeedbackReveal } from './components/FeedbackReveal'
 import { UnlockToast } from './components/UnlockToast'
+import { SettingsPanel } from './SettingsPanel'
 
 interface PracticeScreenProps {
   trainer: Trainer
   engine: ToneEngine
   timing: TimingConfig
+  settings: Settings
+  onSettingsChange: (settings: Settings) => void
   /** Called after each scored answer (the app persists progress). */
   onAnswered?: (result: AnswerResult) => void
 }
@@ -29,10 +33,13 @@ export function PracticeScreen({
   trainer,
   engine,
   timing,
+  settings,
+  onSettingsChange,
   onAnswered,
 }: PracticeScreenProps) {
   const session = useTrainerSession({ trainer, engine, timing, onAnswered })
   const { phase, start, replay } = session
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // Space/Enter as controls. Space is not a valid answer key, so it's free to
   // mean "start" (idle) and "replay" (listening) without clashing with copying.
@@ -54,7 +61,27 @@ export function PracticeScreen({
   return (
     <div className="relative flex h-full flex-col">
       <UnlockToast char={session.unlockToast} onDismiss={session.dismissToast} />
-      <StatsBar unlocked={session.unlocked} summary={session.summary} />
+      <SettingsPanel
+        open={settingsOpen}
+        settings={settings}
+        onSettingsChange={onSettingsChange}
+        onClose={() => setSettingsOpen(false)}
+      />
+      <StatsBar
+        unlocked={session.unlocked}
+        summary={session.summary}
+        effectiveWpm={timing.effectiveWpm}
+        actions={
+          <button
+            type="button"
+            aria-label="Open settings"
+            onClick={() => setSettingsOpen(true)}
+            className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
+          >
+            ⚙
+          </button>
+        }
+      />
 
       <main className="grid flex-1 place-items-center px-6">
         <AnimatePresence mode="wait">

@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Served from a project subpath on GitHub Pages (dydx404.github.io/ditdah/);
+  // dev/test stay at root.
+  base: mode === 'production' ? '/ditdah/' : '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -22,4 +25,4 @@ export default defineConfig({
       include: ['src/core/**/*.ts'],
     },
   },
-})
+}))

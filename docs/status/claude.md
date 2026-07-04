@@ -6,33 +6,39 @@ _Written only by Claude. Snapshot, not a diary. Last updated: 2026-07-04._
 
 `~/ditdah-claude` (linked worktree; `~/ditdah` is Codex's — never touch it).
 
+## Done (this session)
+
+- Real v0 loop is live on `main`: morse (#2) + audio (#3) + trainer (#6) + loop
+  UI (#7) + stub→real swap (#9). Benson validated the audio/vibe. ✅
+- Storage contract frozen (#10). All four core contracts now frozen.
+
 ## In flight
 
-- **PR #7** — v0 receiving loop UI (`feat/ui-practice-loop`), CI green, on the
-  **dev stub trainer**. Awaiting merge + Benson's browser audio check.
-- **PR (this)** — `chore/roadmap-and-status`: ROADMAP + status protocol.
+- **PR (this)** — `feat/deploy-gh-pages`: Vite `base: /ditdah/` (prod only) +
+  Pages Actions workflow. Build emits `/ditdah/` paths; gates green.
 
 ## Blocked / waiting
 
-- **#5 (Codex, `core/trainer`)** — when it merges, swap `createStubTrainer` →
-  `createTrainer` from `@/core/trainer` in `src/App.tsx` (one line) and delete
-  `src/ui/dev/`. Then re-run the loop.
-- **Browser audio verification** — I can't hear audio headlessly. Need Benson to
-  confirm: clean tone, no clicks, musical 20/10 WPM timing, instant feedback.
+- **#11 (Codex, `core/storage`)** — localStorage persistence. When it merges I
+  wire it into the app (below).
+- **Benson action:** after deploy PR merges, enable Pages once
+  (Settings → Pages → Source: **GitHub Actions**).
 
 ## Next (my lane)
 
-1. Post-#5: wire real trainer, delete stub, verify loop end-to-end.
-2. `core/storage` — freeze the contract, then persist progress (IndexedDB).
-3. Deploy to Pages.
+1. Wire storage into the app once #11 lands: load Progress on open, save on each
+   answer/unlock, **rehydrate the trainer via `initialUnlockCount =
+   progress.unlocked.length`** (no trainer-contract change needed). Persist
+   charStats + streak too.
+2. Mobile: on-screen tap input (answer buttons) so it's usable on a phone.
+3. Phase 2: settings (WPM/tone/volume), session history, streak UI.
 
 ## Open questions
 
-- Does the sidetone sound right in a real browser? (gates any audio polish)
-- Default WPM (20/10) and 600 Hz — confirm they feel good, or make configurable
-  sooner (Phase 2 settings).
+- Default WPM (20/10) + 600 Hz — keep, or expose settings sooner?
 
 ## Notes
 
 - Env: `conda activate nodejs` before npm (WSL; Linux node in conda).
-- All four gates before any PR: `typecheck && test && lint && build`.
+- Gates before any PR: `typecheck && test && lint && build`.
+- Deploy: prod base is `/ditdah/`; dev/test stay at `/`.

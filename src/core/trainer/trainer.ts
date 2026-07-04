@@ -1,4 +1,4 @@
-import { KOCH_ORDER } from '../morse'
+import { KOCH_ORDER, symbolsFor } from '../morse'
 import { createRng } from './rng'
 import type {
   CharResult,
@@ -19,6 +19,7 @@ export function createTrainer(config: TrainerConfig): Trainer {
 
   const promptMode = config.promptMode ?? 'single'
   const groupSize = config.groupSize ?? 5
+  const freeCharset = normalizeCharset(config.charset)
   const rng = createRng(config.seed)
   const stats = new Map<string, MutableCharStat>()
   const resultHistory = new Map<string, boolean[]>()
@@ -98,10 +99,18 @@ export function createTrainer(config: TrainerConfig): Trainer {
   }
 
   function unlockedChars(): readonly string[] {
+    if (freeCharset.length > 0) {
+      return freeCharset
+    }
+
     return KOCH_ORDER.slice(0, unlockedCount)
   }
 
   function maybeUnlockNext(): string | null {
+    if (freeCharset.length > 0) {
+      return null
+    }
+
     const newest = KOCH_ORDER[unlockedCount - 1]
     const newestHistory = resultHistory.get(newest) ?? []
 
@@ -126,6 +135,26 @@ export function createTrainer(config: TrainerConfig): Trainer {
 
     return unlocked
   }
+}
+
+function normalizeCharset(charset: readonly string[] | undefined): readonly string[] {
+  if (charset === undefined || charset.length === 0) {
+    return []
+  }
+
+  const seen = new Set<string>()
+  const chars: string[] = []
+  for (const raw of charset) {
+    const char = raw.toUpperCase()
+    if (char.length !== 1 || symbolsFor(char) === undefined || seen.has(char)) {
+      continue
+    }
+
+    seen.add(char)
+    chars.push(char)
+  }
+
+  return sortByKochOrder(chars)
 }
 
 function validateConfig(config: TrainerConfig): void {
@@ -220,7 +249,7 @@ function summarize(
   let correct = 0
   const perChar: CharStat[] = []
 
-  for (const char of KOCH_ORDER) {
+  for (const char of sortByKochOrder([...stats.keys()])) {
     const stat = stats.get(char)
     if (stat === undefined || stat.attempts === 0) {
       continue
@@ -244,4 +273,13 @@ function summarize(
     perChar,
     unlockedThisSession: [...unlockedThisSession],
   }
+}
+
+function sortByKochOrder(chars: readonly string[]): string[] {
+  return [...chars].sort((a, b) => charOrder(a) - charOrder(b))
+}
+
+function charOrder(char: string): number {
+  const index = KOCH_ORDER.indexOf(char as (typeof KOCH_ORDER)[number])
+  return index === -1 ? KOCH_ORDER.length : index
 }

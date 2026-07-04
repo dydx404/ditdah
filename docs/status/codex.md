@@ -9,7 +9,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- _(none noted)_
+- **#51 — Free training trainer charset support**
+  (`feat/free-training-core`): additive `TrainerConfig.charset` plus core prompt
+  selection/unlock behavior for custom character sets. Do not touch #50 surfaces.
 
 ## Blocked / waiting
 
@@ -28,6 +30,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- PR #50 is open for optional cloud accounts/sync; avoid App/settings/modes work
+  until it merges.
 - UI localization extraction merged as PR #47; local gates, PR CI, main CI, and
   Pages deploy were green. The first Pages deploy attempt hit GitHub's
   transient "try again later" failure and passed on rerun.

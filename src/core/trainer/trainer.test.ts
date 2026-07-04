@@ -224,6 +224,75 @@ describe('createTrainer — group mode', () => {
   })
 })
 
+describe('createTrainer — free training charset', () => {
+  it('normalizes charset by uppercasing, deduping, filtering, and Koch-ordering', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      charset: ['s', 'K', 'M', 's', '~', ' ', 'E'],
+    })
+
+    expect(trainer.unlockedChars()).toEqual(['K', 'M', 'E', 'S'])
+  })
+
+  it('draws single-character prompts only from the configured charset', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      charset: ['E', 'T', '5'],
+    })
+    const allowed = new Set(trainer.unlockedChars())
+
+    for (const text of promptTexts(trainer, 40)) {
+      expect(allowed.has(text)).toBe(true)
+    }
+  })
+
+  it('does not unlock additional Koch characters in charset mode', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      charset: ['M'],
+    })
+
+    for (let count = 0; count < 10; count += 1) {
+      const prompt = trainer.nextPrompt()
+      const result = trainer.submit(prompt.id, prompt.text)
+
+      expect(result.unlocked).toBeNull()
+      expect(trainer.unlockedChars()).toEqual(['M'])
+    }
+
+    expect(trainer.summary().unlockedThisSession).toEqual([])
+  })
+
+  it('produces group prompts from the configured charset', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      promptMode: 'group',
+      groupSize: 6,
+      charset: ['E', 'T'],
+    })
+    const prompt = trainer.nextPrompt()
+
+    expect(prompt.text).toHaveLength(6)
+    expect([...prompt.text].every((char) => char === 'E' || char === 'T')).toBe(
+      true,
+    )
+
+    const result = trainer.submit(prompt.id, prompt.text)
+    expect(result.correct).toBe(true)
+    expect(result.unlocked).toBeNull()
+    expect(result.perChar).toHaveLength(6)
+  })
+
+  it('keeps Koch behavior when charset is empty or unsupported-only', () => {
+    expect(promptTexts(createTrainer({ ...baseConfig, charset: [] }), 20)).toEqual(
+      promptTexts(createTrainer(baseConfig), 20),
+    )
+    expect(
+      promptTexts(createTrainer({ ...baseConfig, charset: ['~', ' '] }), 20),
+    ).toEqual(promptTexts(createTrainer(baseConfig), 20))
+  })
+})
+
 /** Flip the first character to the other unlocked one (K<->M). */
 function swapFirst(text: string): string {
   const other = text[0] === 'K' ? 'M' : 'K'

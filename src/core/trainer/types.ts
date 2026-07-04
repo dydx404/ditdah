@@ -33,6 +33,12 @@ export interface TrainerConfig {
   /** Characters per prompt in `'group'` mode. Default 5. Ignored when single. */
   readonly groupSize?: number
   /**
+   * Optional explicit prompt character set for free training. When present and
+   * non-empty, prompts draw from this set instead of the unlocked Koch prefix,
+   * and Koch unlock progression is disabled for the session.
+   */
+  readonly charset?: readonly string[]
+  /**
    * Per-character accuracy in [0,1] required to unlock the next Koch character.
    * Evaluated over the most recent `unlockWindow` attempts of the newest char.
    */

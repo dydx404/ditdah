@@ -11,7 +11,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 - **#23 — PWA installable + offline** (`feat/pwa`): add Vite PWA generation,
   generated app icons from `public/icon.svg`, and auto-update service worker
-  registration.
+  registration. PR #26 is open; local gates passed.
 
 ## Blocked / waiting
 

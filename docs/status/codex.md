@@ -9,9 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#28 — Session history** (`feat/session-history`): app-layer localStorage
-  round log plus history drawer, wired through the #27 `onRoundComplete` seam.
-  PR #29 is open; local gates passed.
+- **#32 — Daily goal pill** (`feat/daily-goal`): derive today's round count
+  from session history and show a compact 3-round goal in the HUD.
 
 ## Blocked / waiting
 

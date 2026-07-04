@@ -59,6 +59,21 @@ export function clearHistory(): void {
   }
 }
 
+export function roundsToday(
+  history: readonly RoundRecord[],
+  now = Date.now(),
+): number {
+  const today = new Date(now)
+  if (Number.isNaN(today.getTime())) {
+    return 0
+  }
+
+  return history.reduce((total, record) => {
+    const at = new Date(record.at)
+    return isSameLocalDay(at, today) ? total + 1 : total
+  }, 0)
+}
+
 function normalizeRoundRecord(record: RoundRecord): RoundRecord | null {
   if (!isRoundRecord(record)) {
     return null
@@ -127,4 +142,13 @@ function isNonNegativeFinite(value: unknown): value is number {
 
 function isRatio(value: unknown): value is number {
   return isNonNegativeFinite(value) && value <= 1
+}
+
+function isSameLocalDay(a: Date, b: Date): boolean {
+  return (
+    !Number.isNaN(a.getTime()) &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
 }

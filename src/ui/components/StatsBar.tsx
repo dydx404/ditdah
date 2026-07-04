@@ -5,6 +5,7 @@
  */
 import type { ReactNode } from 'react'
 import type { SessionSummary } from '@/core/trainer/types'
+import { DailyGoal } from './DailyGoal'
 
 interface StatsBarProps {
   unlocked: readonly string[]
@@ -12,6 +13,8 @@ interface StatsBarProps {
   effectiveWpm?: number
   /** Current daily streak (consecutive days practiced). Shown when > 0. */
   streak?: number
+  /** Completed rounds today, derived from local session history. */
+  roundsToday?: number
   actions?: ReactNode
 }
 
@@ -20,6 +23,7 @@ export function StatsBar({
   summary,
   effectiveWpm = summary.effectiveWpm,
   streak = 0,
+  roundsToday = 0,
   actions,
 }: StatsBarProps) {
   const accuracy = Math.round(summary.accuracy * 100)
@@ -65,6 +69,7 @@ export function StatsBar({
               </dd>
             </div>
           )}
+          <DailyGoal completed={roundsToday} />
         </dl>
         {actions}
       </div>

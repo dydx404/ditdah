@@ -45,6 +45,8 @@ describe('PracticeScreen', () => {
     expect(
       screen.getByRole('button', { name: /open history/i }),
     ).toBeInTheDocument()
+    expect(screen.getByText('0 / 3')).toBeInTheDocument()
+    expect(screen.getByText('today')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /character reference/i }),
     ).toHaveAttribute('aria-expanded', 'false')

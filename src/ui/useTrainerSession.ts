@@ -29,6 +29,8 @@ export interface UseTrainerSessionOptions {
   correctHoldMs?: number
   /** How long to hold feedback on a miss (longer — the learner studies it). */
   wrongHoldMs?: number
+  /** Called after each scored answer — the app persists progress here. */
+  onAnswered?: (result: AnswerResult) => void
 }
 
 export interface SessionView {
@@ -46,7 +48,7 @@ export interface SessionView {
 }
 
 export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
-  const { trainer, engine, timing } = opts
+  const { trainer, engine, timing, onAnswered } = opts
   const correctHoldMs = opts.correctHoldMs ?? 450
   const wrongHoldMs = opts.wrongHoldMs ?? 1300
 
@@ -103,6 +105,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
         playTone(result.expected) // let them hear the correct sound
       }
       if (result.unlocked) setUnlockToast(result.unlocked)
+      onAnswered?.(result) // app persists progress
 
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(
@@ -110,7 +113,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
         result.correct ? correctHoldMs : wrongHoldMs,
       )
     },
-    [trainer, playTone, playNext, correctHoldMs, wrongHoldMs],
+    [trainer, playTone, playNext, correctHoldMs, wrongHoldMs, onAnswered],
   )
 
   // Capture answers only while listening — no typing ahead during feedback.

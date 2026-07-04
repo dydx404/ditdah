@@ -10,8 +10,9 @@ _Snapshot, not a diary. Keep it short and current._
 ## In flight
 
 - **#51 — Free training trainer charset support**
-  (`feat/free-training-core`): additive `TrainerConfig.charset` plus core prompt
-  selection/unlock behavior for custom character sets. Do not touch #50 surfaces.
+  (`feat/free-training-core`, PR #52): additive `TrainerConfig.charset` plus core
+  prompt selection/unlock behavior for custom character sets. Local gates and
+  first PR verify passed; awaiting Benson merge.
 
 ## Blocked / waiting
 

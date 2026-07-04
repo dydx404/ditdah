@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { PracticeScreen } from './PracticeScreen'
-import { createStubTrainer } from './dev/stubTrainer'
+import { createTrainer } from '@/core/trainer'
 import type { ToneEngine } from '@/core/audio/types'
 import type { TimingConfig } from '@/core/morse/types'
 
@@ -18,7 +18,7 @@ const fakeEngine: ToneEngine = {
 
 describe('PracticeScreen', () => {
   it('mounts and shows the idle start gate with the initial characters', () => {
-    const trainer = createStubTrainer({
+    const trainer = createTrainer({
       timing,
       initialUnlockCount: 2,
       unlockAccuracy: 0.9,

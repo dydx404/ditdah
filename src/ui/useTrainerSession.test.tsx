@@ -5,6 +5,7 @@ import { useTrainerSession } from './useTrainerSession'
 import { createTrainer } from '@/core/trainer'
 import type { ToneEngine, PlayHandle } from '@/core/audio/types'
 import type { TimingConfig } from '@/core/morse/types'
+import type { AnswerResult, Trainer } from '@/core/trainer/types'
 
 const timing: TimingConfig = { charWpm: 20, effectiveWpm: 10, toneHz: 600 }
 
@@ -28,34 +29,90 @@ function makeFakeEngine() {
   return { engine, calls }
 }
 
+/**
+ * A controllable trainer whose prompt is always `fixedChar`, so a test can press
+ * a known-correct (or known-wrong) key without peeking at the hidden prompt.
+ * Keeps the state-machine tests independent of trainer/RNG internals.
+ */
+function makeFakeTrainer(fixedChar = 'K'): Trainer {
+  const stats = new Map<string, { attempts: number; correct: number }>()
+  let total = 0
+  let correct = 0
+  let counter = 0
+  return {
+    unlockedChars: () => [fixedChar, 'M'],
+    nextPrompt: () => ({ id: `p${counter++}`, text: fixedChar }),
+    submit: (_id, received) => {
+      const isCorrect = received.toUpperCase() === fixedChar
+      total += 1
+      if (isCorrect) correct += 1
+      const s = stats.get(fixedChar) ?? { attempts: 0, correct: 0 }
+      stats.set(fixedChar, {
+        attempts: s.attempts + 1,
+        correct: s.correct + (isCorrect ? 1 : 0),
+      })
+      return {
+        correct: isCorrect,
+        expected: fixedChar,
+        received: received.toUpperCase(),
+        unlocked: null,
+      }
+    },
+    summary: () => ({
+      total,
+      correct,
+      accuracy: total ? correct / total : 0,
+      effectiveWpm: timing.effectiveWpm,
+      perChar: [...stats.entries()].map(([char, s]) => ({
+        char,
+        attempts: s.attempts,
+        correct: s.correct,
+        accuracy: s.attempts ? s.correct / s.attempts : 0,
+      })),
+      unlockedThisSession: [],
+    }),
+  }
+}
+
+function realTrainer(): Trainer {
+  return createTrainer({
+    timing,
+    initialUnlockCount: 2,
+    unlockAccuracy: 0.9,
+    unlockWindow: 5,
+    seed: 1,
+  })
+}
+
 function press(key: string) {
   act(() => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key }))
   })
 }
 
+interface SetupOptions {
+  trainer?: Trainer
+  roundLength?: number
+  onAnswered?: (r: AnswerResult) => void
+  onRoundComplete?: (r: unknown) => void
+}
+
 describe('useTrainerSession', () => {
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
 
-  const setup = (onAnswered?: (r: unknown) => void, roundLength?: number) => {
+  const setup = (opts: SetupOptions = {}) => {
     const { engine, calls } = makeFakeEngine()
-    const trainer = createTrainer({
-      timing,
-      initialUnlockCount: 2,
-      unlockAccuracy: 0.9,
-      unlockWindow: 5,
-      seed: 1,
-    })
+    const trainer = opts.trainer ?? realTrainer()
     const view = renderHook(() =>
       useTrainerSession({
         trainer,
         engine,
         timing,
-        roundLength,
+        roundLength: opts.roundLength,
         correctHoldMs: 100,
-        wrongHoldMs: 100,
-        onAnswered: onAnswered as never,
+        onAnswered: opts.onAnswered,
+        onRoundComplete: opts.onRoundComplete as never,
       }),
     )
     return { engine, calls, trainer, view }
@@ -74,15 +131,15 @@ describe('useTrainerSession', () => {
     expect(calls.play).toBe(1) // played the first prompt
   })
 
-  it('answering moves to feedback, scores, then auto-advances to the next prompt', async () => {
-    const { calls, view } = setup()
+  it('a correct answer moves to feedback, scores, then auto-advances', async () => {
+    const { calls, view } = setup({ trainer: makeFakeTrainer('K') })
     await act(async () => view.result.current.start())
 
     const playsBefore = calls.play
-    press('K') // whatever the prompt was, this is a valid answer key
+    press('K') // the fake trainer's prompt is always K
 
     expect(view.result.current.phase).toBe('feedback')
-    expect(view.result.current.lastResult).not.toBeNull()
+    expect(view.result.current.lastResult?.correct).toBe(true)
     expect(view.result.current.summary.total).toBe(1)
 
     // hold elapses -> next prompt plays, back to listening
@@ -92,26 +149,30 @@ describe('useTrainerSession', () => {
   })
 
   it('fires onAnswered once per scored answer (the persistence seam)', async () => {
-    const results: unknown[] = []
-    const { view } = setup((r) => results.push(r))
+    const results: AnswerResult[] = []
+    const { view } = setup({
+      trainer: makeFakeTrainer('K'),
+      onAnswered: (r) => results.push(r),
+    })
     await act(async () => view.result.current.start())
 
     press('K')
     expect(results).toHaveLength(1)
-    expect(results[0]).toMatchObject({ expected: expect.any(String) })
+    expect(results[0]).toMatchObject({ expected: 'K', correct: true })
 
     act(() => vi.advanceTimersByTime(120)) // advance to next prompt
-    press('M')
+    press('K')
     expect(results).toHaveLength(2)
   })
 
-  it('does not accept a second answer during feedback (no typing ahead)', async () => {
-    const { view } = setup()
+  it('does not accept a second answer during the correct-answer flash', async () => {
+    const { view } = setup({ trainer: makeFakeTrainer('K') })
     await act(async () => view.result.current.start())
 
     press('K')
+    expect(view.result.current.phase).toBe('feedback')
     expect(view.result.current.summary.total).toBe(1)
-    press('M') // ignored: listener is detached during feedback
+    press('K') // ignored: no key capture during feedback
     expect(view.result.current.summary.total).toBe(1)
   })
 
@@ -136,15 +197,56 @@ describe('useTrainerSession', () => {
     expect(view.result.current.reveal).toBe(r?.expected)
   })
 
+  it('gates on a miss: never auto-advances until the char is echoed', async () => {
+    const { view } = setup({ roundLength: 5 })
+    await act(async () => view.result.current.start())
+
+    press('.') // wrong
+    expect(view.result.current.phase).toBe('retry')
+
+    // A miss must NOT auto-advance, however long we wait.
+    act(() => vi.advanceTimersByTime(5000))
+    expect(view.result.current.phase).toBe('retry')
+
+    const expected = view.result.current.reveal as string
+    const wrongEcho = expected === 'K' ? 'M' : 'K'
+    press(wrongEcho) // still not the character -> keeps gating
+    expect(view.result.current.phase).toBe('retry')
+
+    press(expected) // correct echo -> success flash -> advance
+    expect(view.result.current.phase).toBe('feedback')
+    act(() => vi.advanceTimersByTime(200))
+    expect(view.result.current.phase).toBe('listening')
+  })
+
+  it('a missed prompt is scored once; the echo is not re-scored', async () => {
+    const results: AnswerResult[] = []
+    const { view } = setup({ roundLength: 1, onAnswered: (r) => results.push(r) })
+    await act(async () => view.result.current.start())
+
+    press('.') // miss -> retry (this is the score)
+    expect(view.result.current.summary.total).toBe(1)
+    expect(results).toHaveLength(1)
+
+    const expected = view.result.current.reveal as string
+    press(expected) // echo -> not scored, not another onAnswered
+    expect(view.result.current.summary.total).toBe(1)
+    expect(results).toHaveLength(1)
+
+    act(() => vi.advanceTimersByTime(200)) // last prompt of round -> summary
+    expect(view.result.current.phase).toBe('summary')
+    expect(view.result.current.roundSummary?.total).toBe(1)
+  })
+
   it('ends the round after roundLength prompts and shows a summary', async () => {
-    const { view } = setup(undefined, 2) // 2-prompt round
+    const { view } = setup({ trainer: makeFakeTrainer('K'), roundLength: 2 })
     await act(async () => view.result.current.start())
 
     press('K') // answer 1
     act(() => vi.advanceTimersByTime(120)) // -> next prompt
     expect(view.result.current.phase).toBe('listening')
 
-    press('M') // answer 2 (last of the round)
+    press('K') // answer 2 (last of the round)
     act(() => vi.advanceTimersByTime(120)) // -> summary, not another prompt
 
     expect(view.result.current.phase).toBe('summary')
@@ -154,7 +256,7 @@ describe('useTrainerSession', () => {
   })
 
   it('starts a fresh round on again()', async () => {
-    const { view } = setup(undefined, 1) // 1-prompt round
+    const { view } = setup({ trainer: makeFakeTrainer('K'), roundLength: 1 })
     await act(async () => view.result.current.start())
 
     press('K')
@@ -167,7 +269,7 @@ describe('useTrainerSession', () => {
   })
 
   it('answer() scores like a keypress (tap input path)', async () => {
-    const { view } = setup()
+    const { view } = setup({ trainer: makeFakeTrainer('K') })
     await act(async () => view.result.current.start())
 
     act(() => view.result.current.answer('K'))
@@ -175,27 +277,24 @@ describe('useTrainerSession', () => {
     expect(view.result.current.summary.total).toBe(1)
   })
 
+  it('retryAnswer() echoes to clear the gate (tap input path)', async () => {
+    const { view } = setup({ trainer: makeFakeTrainer('K') })
+    await act(async () => view.result.current.start())
+
+    act(() => view.result.current.answer('.')) // miss -> retry
+    expect(view.result.current.phase).toBe('retry')
+
+    act(() => view.result.current.retryAnswer('K')) // echo the revealed char
+    expect(view.result.current.phase).toBe('feedback')
+  })
+
   it('fires onRoundComplete once with the round summary', async () => {
-    const { engine } = makeFakeEngine()
-    const trainer = createTrainer({
-      timing,
-      initialUnlockCount: 2,
-      unlockAccuracy: 0.9,
-      unlockWindow: 5,
-      seed: 1,
-    })
     const onRoundComplete = vi.fn()
-    const view = renderHook(() =>
-      useTrainerSession({
-        trainer,
-        engine,
-        timing,
-        roundLength: 1,
-        correctHoldMs: 100,
-        wrongHoldMs: 100,
-        onRoundComplete,
-      }),
-    )
+    const { view } = setup({
+      trainer: makeFakeTrainer('K'),
+      roundLength: 1,
+      onRoundComplete,
+    })
 
     await act(async () => view.result.current.start())
     act(() => view.result.current.answer('K'))

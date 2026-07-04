@@ -38,7 +38,7 @@ Reasons to come back tomorrow.
 
 - ✅ Daily streak day-logic (#19, #20)
 - ⏳ Small daily goal
-- ⏳ Session summary + history (accuracy, effective WPM over time)
+- ✅ Session summary + history (accuracy, effective WPM over time) (#27, #28)
 - ✅ Settings: character/effective WPM, sidetone frequency, volume (#15, #16)
 - ✅ PWA (installable, offline) (#23)
 

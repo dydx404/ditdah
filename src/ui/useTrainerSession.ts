@@ -54,6 +54,8 @@ export interface UseTrainerSessionOptions {
   wrongHoldMs?: number
   /** Called after each scored answer — the app persists progress here. */
   onAnswered?: (result: AnswerResult) => void
+  /** Called once when a round finishes — the app can log it to history. */
+  onRoundComplete?: (summary: RoundSummary) => void
 }
 
 export interface SessionView {
@@ -71,12 +73,14 @@ export interface SessionView {
   start: () => void
   /** Start another round after a summary. */
   again: () => void
+  /** Submit an answer for the active prompt (used by on-screen tap input). */
+  answer: (key: string) => void
   replay: () => void
   dismissToast: () => void
 }
 
 export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
-  const { trainer, engine, timing, onAnswered } = opts
+  const { trainer, engine, timing, onAnswered, onRoundComplete } = opts
   const roundLength = opts.roundLength ?? DEFAULT_ROUND_LENGTH
   const correctHoldMs = opts.correctHoldMs ?? 450
   const wrongHoldMs = opts.wrongHoldMs ?? 1300
@@ -125,16 +129,18 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       .sort((a, b) => a.accuracy - b.accuracy || b.attempts - a.attempts)
     const total = perChar.reduce((n, c) => n + c.attempts, 0)
     const correct = perChar.reduce((n, c) => n + c.correct, 0)
-    setRoundSummary({
+    const roundResult: RoundSummary = {
       total,
       correct,
       accuracy: total ? correct / total : 0,
       effectiveWpm: timing.effectiveWpm,
       perChar,
       unlocked: [...roundUnlocksRef.current],
-    })
+    }
+    setRoundSummary(roundResult)
     setPhase('summary')
-  }, [timing.effectiveWpm])
+    onRoundComplete?.(roundResult)
+  }, [timing.effectiveWpm, onRoundComplete])
 
   const advance = useCallback(() => {
     if (roundCountRef.current >= roundLength) finishRound()
@@ -235,6 +241,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     unlockToast,
     start,
     again,
+    answer: handleAnswer,
     replay,
     dismissToast,
   }

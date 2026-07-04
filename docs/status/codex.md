@@ -11,6 +11,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 - **#19 — Daily streak day-logic** (`feat/streak`): app-layer progress merge
   updates `Progress.streak` on scored answers without changing frozen contracts.
+  PR #20 is open; local gates passed.
 
 ## Blocked / waiting
 

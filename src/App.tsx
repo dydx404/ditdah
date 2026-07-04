@@ -30,6 +30,7 @@ function App() {
   const baseRef = useRef<Progress | null>(null)
   const streakRef = useRef<Streak | null>(null)
   const [trainer, setTrainer] = useState<Trainer | null>(null)
+  const [streakCount, setStreakCount] = useState(0)
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const initialSettingsRef = useRef(settings)
   const timing = useMemo(
@@ -47,6 +48,7 @@ function App() {
       if (cancelled) return
       baseRef.current = base
       streakRef.current = base?.streak ?? null
+      setStreakCount(base?.streak?.count ?? 0)
       const initialUnlockCount = Math.max(
         DEFAULT_TRAINER.initialUnlockCount,
         base?.unlocked.length ?? 0,
@@ -83,6 +85,7 @@ function App() {
       { streak: streakRef.current },
     )
     streakRef.current = next.streak
+    setStreakCount(next.streak.count)
     void store.save(next)
   }, [trainer])
 
@@ -106,6 +109,7 @@ function App() {
       timing={timing}
       settings={settings}
       onSettingsChange={handleSettingsChange}
+      streak={streakCount}
       onAnswered={handleAnswered}
     />
   )

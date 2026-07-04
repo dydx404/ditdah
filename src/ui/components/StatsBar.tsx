@@ -10,6 +10,8 @@ interface StatsBarProps {
   unlocked: readonly string[]
   summary: SessionSummary
   effectiveWpm?: number
+  /** Current daily streak (consecutive days practiced). Shown when > 0. */
+  streak?: number
   actions?: ReactNode
 }
 
@@ -17,6 +19,7 @@ export function StatsBar({
   unlocked,
   summary,
   effectiveWpm = summary.effectiveWpm,
+  streak = 0,
   actions,
 }: StatsBarProps) {
   const accuracy = Math.round(summary.accuracy * 100)
@@ -48,6 +51,20 @@ export function StatsBar({
             <dt className="text-muted">wpm</dt>
             <dd className="tabular-nums text-text">{effectiveWpm}</dd>
           </div>
+          {streak > 0 && (
+            <div
+              className="flex items-baseline gap-1.5"
+              title={`${streak}-day streak`}
+            >
+              <dt className="text-muted" aria-hidden="true">
+                🔥
+              </dt>
+              <dd className="tabular-nums text-accent">
+                {streak}
+                <span className="sr-only"> day streak</span>
+              </dd>
+            </div>
+          )}
         </dl>
         {actions}
       </div>

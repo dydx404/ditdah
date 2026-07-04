@@ -26,6 +26,8 @@ interface PracticeScreenProps {
   timing: TimingConfig
   settings: Settings
   onSettingsChange: (settings: Settings) => void
+  /** Current daily streak (consecutive days practiced). */
+  streak?: number
   /** Called after each scored answer (the app persists progress). */
   onAnswered?: (result: AnswerResult) => void
 }
@@ -36,6 +38,7 @@ export function PracticeScreen({
   timing,
   settings,
   onSettingsChange,
+  streak,
   onAnswered,
 }: PracticeScreenProps) {
   const session = useTrainerSession({ trainer, engine, timing, onAnswered })
@@ -72,6 +75,7 @@ export function PracticeScreen({
         unlocked={session.unlocked}
         summary={session.summary}
         effectiveWpm={timing.effectiveWpm}
+        streak={streak}
         actions={
           <button
             type="button"

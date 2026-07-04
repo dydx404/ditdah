@@ -10,7 +10,8 @@ _Snapshot, not a diary. Keep it short and current._
 ## In flight
 
 - **#32 — Daily goal pill** (`feat/daily-goal`): derive today's round count
-  from session history and show a compact 3-round goal in the HUD.
+  from session history and show a compact 3-round goal in the HUD. PR #35 is
+  open; local gates passed.
 
 ## Blocked / waiting
 

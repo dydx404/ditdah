@@ -15,6 +15,12 @@
  * re-scored — otherwise accuracy and unlocks would be trivially gamed. If the
  * gate is off, a miss is still scored once, then revealed/replayed and advanced.
  *
+ * Group mode: when a prompt is more than one character, the learner types into
+ * a buffer (backspace to fix) and it submits on Enter or automatically once the
+ * buffer fills. Each position is scored by the trainer; feedback shows the group
+ * per position. The echo-gate is single-character only — a missed group reveals
+ * and advances (retyping five characters to "pass" would be punishing).
+ *
  * Round stats are accumulated here from each AnswerResult, so the trainer stays
  * a pure per-answer scorer. Trainer and ToneEngine are injected for testability.
  */
@@ -81,14 +87,24 @@ export interface SessionView {
   roundSummary: RoundSummary | null
   /** A just-unlocked character to celebrate, until dismissed. */
   unlockToast: string | null
+  /** Characters in the active prompt (1 for single mode, >1 for a group). */
+  promptLength: number
+  /** What the learner has typed so far this prompt (group mode). */
+  buffer: string
   /** Begin the first round (needs the user gesture that unlocks audio). */
   start: () => void
   /** Start another round after a summary. */
   again: () => void
-  /** Submit an answer for the active prompt (used by on-screen tap input). */
+  /** Submit a single-character answer (used by on-screen tap input). */
   answer: (key: string) => void
   /** Echo the revealed character during the `retry` gate (tap input path). */
   retryAnswer: (key: string) => void
+  /** Append a character to the group buffer (tap input path). */
+  typeChar: (key: string) => void
+  /** Delete the last character from the group buffer. */
+  backspace: () => void
+  /** Submit the group buffer as it stands. */
+  submitGroup: () => void
   replay: () => void
   dismissToast: () => void
 }
@@ -107,11 +123,19 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
   const [unlockToast, setUnlockToast] = useState<string | null>(null)
   const [summary, setSummary] = useState<SessionSummary>(() => trainer.summary())
   const [roundSummary, setRoundSummary] = useState<RoundSummary | null>(null)
+  const [promptLength, setPromptLength] = useState(1)
+  const [buffer, setBuffer] = useState('')
 
   const promptRef = useRef<Prompt | null>(null) // active prompt for submit()
-  const textRef = useRef<string | null>(null) // current char, for replay
+  const textRef = useRef<string | null>(null) // current text, for replay
   const retryCharRef = useRef<string | null>(null) // char to echo during retry
+  const bufferRef = useRef('') // group buffer, mirrored to state for render
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const setBuf = useCallback((next: string) => {
+    bufferRef.current = next
+    setBuffer(next)
+  }, [])
 
   // Round-local accumulation (reset each round).
   const roundStatsRef = useRef(new Map<string, { attempts: number; correct: number }>())
@@ -134,11 +158,13 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     const prompt = trainer.nextPrompt()
     promptRef.current = prompt
     textRef.current = prompt.text
+    setPromptLength(prompt.text.length)
+    setBuf('')
     setReveal(null)
     setLastResult(null)
     setPhase('listening')
     playTone(prompt.text)
-  }, [trainer, playTone])
+  }, [trainer, playTone, setBuf])
 
   const finishRound = useCallback(() => {
     const perChar: CharStat[] = [...roundStatsRef.current.entries()]
@@ -201,20 +227,29 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
 
       const result = trainer.submit(prompt.id, key)
 
-      // Accumulate this round's stats.
+      // Accumulate this round's stats. A group scores one attempt per position
+      // (result.perChar); a single answer is one attempt for its character.
       const rs = roundStatsRef.current
-      const prev = rs.get(result.expected) ?? { attempts: 0, correct: 0 }
-      rs.set(result.expected, {
-        attempts: prev.attempts + 1,
-        correct: prev.correct + (result.correct ? 1 : 0),
-      })
-      roundCountRef.current += 1
+      const tally = result.perChar ?? [
+        { expected: result.expected, correct: result.correct },
+      ]
+      for (const c of tally) {
+        const prev = rs.get(c.expected) ?? { attempts: 0, correct: 0 }
+        rs.set(c.expected, {
+          attempts: prev.attempts + 1,
+          correct: prev.correct + (c.correct ? 1 : 0),
+        })
+      }
+      roundCountRef.current += 1 // one prompt (single char or whole group)
       if (result.unlocked) roundUnlocksRef.current.push(result.unlocked)
 
       setLastResult(result)
       setSummary(trainer.summary())
       if (result.unlocked) setUnlockToast(result.unlocked)
       onAnswered?.(result) // app persists progress (first attempt is the score)
+
+      // The echo-gate is single-character only; a missed group just reveals.
+      const isGroup = result.perChar !== undefined
 
       if (result.correct) {
         setReveal(null)
@@ -225,7 +260,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       } else {
         const expected = result.expected
         setReveal(expected)
-        if (gateOnMiss) {
+        if (gateOnMiss && !isGroup) {
           // Gate: cue, reveal the answer, replay it, and wait for the echo.
           retryCharRef.current = expected
           setPhase('retry')
@@ -275,20 +310,79 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     [advance, correctHoldMs, cue],
   )
 
-  // Capture keys while listening (score) or retrying (echo). Never during the
-  // correct-answer feedback flash — no typing ahead into the next prompt.
+  // Group input: append into the buffer; auto-submit once it's full.
+  const typeChar = useCallback(
+    (key: string) => {
+      const prompt = promptRef.current
+      if (!prompt || bufferRef.current.length >= prompt.text.length) return
+      const next = bufferRef.current + key.toUpperCase()
+      setBuf(next)
+      if (next.length >= prompt.text.length) handleAnswer(next)
+    },
+    [handleAnswer, setBuf],
+  )
+
+  const backspace = useCallback(() => {
+    setBuf(bufferRef.current.slice(0, -1))
+  }, [setBuf])
+
+  const submitGroup = useCallback(() => {
+    if (bufferRef.current.length > 0) handleAnswer(bufferRef.current)
+  }, [handleAnswer])
+
+  // Capture keys while listening (answer/type) or retrying (echo). Never during
+  // the feedback flash — no typing ahead into the next prompt.
   useEffect(() => {
     if (phase !== 'listening' && phase !== 'retry') return
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
-      if (!VALID_KEY.test(e.key)) return
-      e.preventDefault()
-      if (phase === 'listening') handleAnswer(e.key)
-      else handleRetry(e.key)
+      const isGroup = (promptRef.current?.text.length ?? 1) > 1
+
+      if (phase === 'retry') {
+        if (!VALID_KEY.test(e.key)) return
+        e.preventDefault()
+        handleRetry(e.key)
+        return
+      }
+      // listening
+      if (!isGroup) {
+        if (!VALID_KEY.test(e.key)) return
+        e.preventDefault()
+        handleAnswer(e.key)
+        return
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        submitGroup()
+      } else if (e.key === 'Backspace') {
+        e.preventDefault()
+        backspace()
+      } else if (VALID_KEY.test(e.key)) {
+        e.preventDefault()
+        typeChar(e.key)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, handleAnswer, handleRetry])
+  }, [phase, handleAnswer, handleRetry, typeChar, backspace, submitGroup])
+
+  // The trainer instance is swapped when prompt mode/size changes (App recreates
+  // it). Reset to idle so a stale in-flight prompt can't submit to a new trainer.
+  const knownTrainer = useRef(trainer)
+  useEffect(() => {
+    if (trainer === knownTrainer.current) return
+    knownTrainer.current = trainer
+    if (timerRef.current) clearTimeout(timerRef.current)
+    engine.stop()
+    promptRef.current = null
+    retryCharRef.current = null
+    setBuf('')
+    setReveal(null)
+    setLastResult(null)
+    setRoundSummary(null)
+    setSummary(trainer.summary())
+    setPhase('idle')
+  }, [trainer, engine, setBuf])
 
   // Stop audio and clear timers on unmount.
   useEffect(
@@ -309,10 +403,15 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     summary,
     roundSummary,
     unlockToast,
+    promptLength,
+    buffer,
     start,
     again,
     answer: handleAnswer,
     retryAnswer: handleRetry,
+    typeChar,
+    backspace,
+    submitGroup,
     replay,
     dismissToast,
   }

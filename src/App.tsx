@@ -36,13 +36,22 @@ function App() {
   // Progress loaded at session start; fixed for the whole session.
   const baseRef = useRef<Progress | null>(null)
   const streakRef = useRef<Streak | null>(null)
-  const [trainer, setTrainer] = useState<Trainer | null>(null)
+  const [trainer, setTrainerState] = useState<Trainer | null>(null)
+  const trainerRef = useRef<Trainer | null>(null)
+  const setTrainer = useCallback((next: Trainer) => {
+    trainerRef.current = next
+    setTrainerState(next)
+  }, [])
   const [streakCount, setStreakCount] = useState(0)
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [history, setHistory] = useState<readonly RoundRecord[]>(() =>
     loadHistory(),
   )
   const initialSettingsRef = useRef(settings)
+  const settingsRef = useRef(settings)
+  useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
   const timing = useMemo(
     () => ({
       charWpm: settings.charWpm,
@@ -52,6 +61,26 @@ function App() {
     [settings],
   )
 
+  const buildTrainer = useCallback(
+    (unlockedCount: number, s: Settings): Trainer =>
+      createTrainer({
+        ...DEFAULT_TRAINER,
+        timing: {
+          charWpm: s.charWpm,
+          effectiveWpm: s.effectiveWpm,
+          toneHz: s.toneHz,
+        },
+        initialUnlockCount: Math.max(
+          DEFAULT_TRAINER.initialUnlockCount,
+          unlockedCount,
+        ),
+        promptMode: s.promptMode,
+        groupSize: s.groupSize,
+        seed: Math.floor(Math.random() * 0xffffffff),
+      }),
+    [],
+  )
+
   useEffect(() => {
     let cancelled = false
     void storeRef.current?.load().then((base) => {
@@ -59,27 +88,30 @@ function App() {
       baseRef.current = base
       streakRef.current = base?.streak ?? null
       setStreakCount(base?.streak?.count ?? 0)
-      const initialUnlockCount = Math.max(
-        DEFAULT_TRAINER.initialUnlockCount,
-        base?.unlocked.length ?? 0,
-      )
-      setTrainer(
-        createTrainer({
-          ...DEFAULT_TRAINER,
-          timing: {
-            charWpm: initialSettingsRef.current.charWpm,
-            effectiveWpm: initialSettingsRef.current.effectiveWpm,
-            toneHz: initialSettingsRef.current.toneHz,
-          },
-          initialUnlockCount,
-          seed: Math.floor(Math.random() * 0xffffffff),
-        }),
-      )
+      setTrainer(buildTrainer(base?.unlocked.length ?? 0, initialSettingsRef.current))
     })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [buildTrainer, setTrainer])
+
+  // Prompt mode / group size are baked into the trainer at creation, so switching
+  // them rebuilds it. Fold the outgoing session's stats into base first, or a
+  // subsequent save would drop everything copied before the switch.
+  useEffect(() => {
+    const outgoing = trainerRef.current
+    if (!outgoing) return
+    const folded = mergeSessionIntoProgress(
+      baseRef.current,
+      outgoing.unlockedChars(),
+      outgoing.summary().perChar,
+      { streak: streakRef.current },
+    )
+    baseRef.current = folded
+    streakRef.current = folded.streak
+    void storeRef.current?.save(folded)
+    setTrainer(buildTrainer(outgoing.unlockedChars().length, settingsRef.current))
+  }, [settings.promptMode, settings.groupSize, buildTrainer, setTrainer])
 
   useEffect(() => {
     engineRef.current?.setVolume(settings.volume)

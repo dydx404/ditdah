@@ -96,6 +96,23 @@ export function SettingsPanel({
             onChange={(roundLength) => update({ roundLength })}
           />
           <SettingToggle
+            label="Group mode (copy runs of characters)"
+            hint="Off by default. On plays a short group to copy at once — the step up from single letters to text."
+            checked={settings.promptMode === 'group'}
+            onChange={(on) => update({ promptMode: on ? 'group' : 'single' })}
+          />
+          {settings.promptMode === 'group' && (
+            <SettingSlider
+              label="Group size"
+              value={settings.groupSize}
+              min={2}
+              max={7}
+              step={1}
+              display={`${settings.groupSize} chars`}
+              onChange={(groupSize) => update({ groupSize })}
+            />
+          )}
+          <SettingToggle
             label="Strict mode (type misses back to continue)"
             hint="On by default: missed characters must be echoed once before moving on."
             checked={settings.strictGate}

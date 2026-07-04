@@ -78,6 +78,44 @@ function makeFakeTrainer(fixedChar = 'K'): Trainer {
   }
 }
 
+/** A trainer whose prompt is a fixed multi-character group, scored per position. */
+function makeFakeGroupTrainer(text = 'KMK'): Trainer {
+  const stats = new Map<string, { attempts: number; correct: number }>()
+  let counter = 0
+  return {
+    unlockedChars: () => ['K', 'M'],
+    nextPrompt: () => ({ id: `g${counter++}`, text }),
+    submit: (_id, received) => {
+      const norm = received.toUpperCase()
+      const perChar = [...text].map((expected, i) => {
+        const got = norm[i] ?? ''
+        const positionCorrect = got === expected
+        const s = stats.get(expected) ?? { attempts: 0, correct: 0 }
+        stats.set(expected, {
+          attempts: s.attempts + 1,
+          correct: s.correct + (positionCorrect ? 1 : 0),
+        })
+        return { expected, received: got, correct: positionCorrect }
+      })
+      return {
+        correct: norm === text,
+        expected: text,
+        received: norm,
+        unlocked: null,
+        perChar,
+      }
+    },
+    summary: () => ({
+      total: 0,
+      correct: 0,
+      accuracy: 0,
+      effectiveWpm: timing.effectiveWpm,
+      perChar: [],
+      unlockedThisSession: [],
+    }),
+  }
+}
+
 function realTrainer(): Trainer {
   return createTrainer({
     timing,
@@ -358,5 +396,58 @@ describe('useTrainerSession', () => {
 
     expect(onRoundComplete).toHaveBeenCalledOnce()
     expect(onRoundComplete.mock.calls[0][0]).toMatchObject({ total: 1 })
+  })
+
+  // ---- group mode ----
+
+  it('group mode: buffers keystrokes and auto-submits when full', async () => {
+    const { view } = setup({ trainer: makeFakeGroupTrainer('KM') })
+    await act(async () => view.result.current.start())
+    expect(view.result.current.promptLength).toBe(2)
+
+    press('K')
+    expect(view.result.current.buffer).toBe('K')
+    expect(view.result.current.phase).toBe('listening') // not full yet
+
+    press('M') // fills the buffer -> auto-submit
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.lastResult?.correct).toBe(true)
+    expect(view.result.current.lastResult?.perChar).toHaveLength(2)
+  })
+
+  it('group mode: Enter submits a partial group; missing positions are wrong', async () => {
+    const { view } = setup({ trainer: makeFakeGroupTrainer('KM') })
+    await act(async () => view.result.current.start())
+
+    press('K')
+    press('Enter')
+    expect(view.result.current.phase).toBe('feedback')
+    const r = view.result.current.lastResult
+    expect(r?.correct).toBe(false)
+    expect(r?.perChar?.[1]).toMatchObject({ received: '', correct: false })
+  })
+
+  it('group mode: backspace edits the buffer', async () => {
+    const { view } = setup({ trainer: makeFakeGroupTrainer('KMK') })
+    await act(async () => view.result.current.start())
+
+    press('K')
+    press('M')
+    expect(view.result.current.buffer).toBe('KM')
+    press('Backspace')
+    expect(view.result.current.buffer).toBe('K')
+  })
+
+  it('group mode: a miss reveals and advances — never opens the echo gate', async () => {
+    const { view } = setup({
+      trainer: makeFakeGroupTrainer('KM'),
+      gateOnMiss: true, // strict is on, yet groups must not gate
+    })
+    await act(async () => view.result.current.start())
+
+    press('M')
+    press('M') // typed "MM" for group "KM" -> a miss
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.phase).not.toBe('retry')
   })
 })

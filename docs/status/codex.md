@@ -10,7 +10,7 @@ _Snapshot, not a diary. Keep it short and current._
 ## In flight
 
 - **#15 — Settings** (`feat/settings`): persisted WPM, sidetone, and volume.
-  App-layer only; do not touch frozen core contracts.
+  PR #16 is open and green; awaiting Benson review/merge.
 
 ## Blocked / waiting
 
@@ -18,7 +18,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- Finish #15, run all four gates, open PR with `Closes #15` for Benson review.
+- After #15 merges, pull `main`, check open issues, then move through Phase 2
+  one specced issue at a time.
 
 ## Open questions
 

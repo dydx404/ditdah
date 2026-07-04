@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#15 — Settings** (`feat/settings`): persisted WPM, sidetone, and volume.
-  PR #16 is open and green; awaiting Benson review/merge.
+- **#19 — Daily streak day-logic** (`feat/streak`): app-layer progress merge
+  updates `Progress.streak` on scored answers without changing frozen contracts.
 
 ## Blocked / waiting
 
@@ -18,8 +18,10 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #15 merges, pull `main`, check open issues, then move through Phase 2
-  one specced issue at a time.
+- PR #18 (sound-first character reference) is open and green from the previous
+  branch; this streak branch is intentionally based on `main`.
+- Account/cloud sync needs a scoped issue before implementation; roadmap still
+  says accounts/back-end are deferred until retention earns them.
 
 ## Open questions
 

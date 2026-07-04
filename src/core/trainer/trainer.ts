@@ -1,6 +1,7 @@
 import { KOCH_ORDER } from '../morse'
 import { createRng } from './rng'
 import type {
+  CharResult,
   CharStat,
   Prompt,
   SessionSummary,
@@ -16,6 +17,8 @@ interface MutableCharStat {
 export function createTrainer(config: TrainerConfig): Trainer {
   validateConfig(config)
 
+  const promptMode = config.promptMode ?? 'single'
+  const groupSize = config.groupSize ?? 5
   const rng = createRng(config.seed)
   const stats = new Map<string, MutableCharStat>()
   const resultHistory = new Map<string, boolean[]>()
@@ -31,15 +34,18 @@ export function createTrainer(config: TrainerConfig): Trainer {
     },
 
     nextPrompt() {
-      const char = choosePromptChar(unlockedChars(), previousChar, rng)
+      const text =
+        promptMode === 'group'
+          ? chooseGroup(unlockedChars(), groupSize, rng)
+          : choosePromptChar(unlockedChars(), previousChar, rng)
       const prompt = {
         id: String(nextPromptId),
-        text: char,
+        text,
       }
 
       nextPromptId += 1
       activePrompt = prompt
-      previousChar = char
+      previousChar = text[text.length - 1]
 
       return prompt
     },
@@ -51,17 +57,38 @@ export function createTrainer(config: TrainerConfig): Trainer {
 
       const prompt = activePrompt
       const normalizedReceived = received.toUpperCase()
-      const correct = normalizedReceived === prompt.text
-
-      recordAttempt(prompt.text, correct, stats, resultHistory)
-      const unlocked = maybeUnlockNext()
       activePrompt = undefined
 
+      // Single character: score the one attempt, classic result shape.
+      if (prompt.text.length <= 1) {
+        const correct = normalizedReceived === prompt.text
+        recordAttempt(prompt.text, correct, stats, resultHistory)
+        return {
+          correct,
+          expected: prompt.text,
+          received: normalizedReceived,
+          unlocked: maybeUnlockNext(),
+        }
+      }
+
+      // Group: each position is one attempt for that character, so per-char
+      // stats and the unlock window keep working. Whole prompt is correct only
+      // when every position matches.
+      const perChar: CharResult[] = []
+      for (let i = 0; i < prompt.text.length; i += 1) {
+        const expected = prompt.text[i]
+        const got = normalizedReceived[i] ?? ''
+        const positionCorrect = got === expected
+        recordAttempt(expected, positionCorrect, stats, resultHistory)
+        perChar.push({ expected, received: got, correct: positionCorrect })
+      }
+
       return {
-        correct,
+        correct: normalizedReceived === prompt.text,
         expected: prompt.text,
         received: normalizedReceived,
-        unlocked,
+        unlocked: maybeUnlockNext(),
+        perChar,
       }
     },
 
@@ -121,6 +148,37 @@ function validateConfig(config: TrainerConfig): void {
   ) {
     throw new RangeError('unlockAccuracy must be in range')
   }
+
+  if (config.promptMode === 'group') {
+    const size = config.groupSize ?? 5
+    if (!Number.isInteger(size) || size < 1) {
+      throw new RangeError('groupSize must be an integer greater than 0')
+    }
+  }
+}
+
+/**
+ * Build a group of `size` characters drawn from the unlocked set. Repeats
+ * within a group are allowed (real CW groups have them), but a trivially
+ * all-identical group is broken up when more than one character is available.
+ */
+function chooseGroup(
+  unlockedChars: readonly string[],
+  size: number,
+  rng: () => number,
+): string {
+  const chars: string[] = []
+  for (let i = 0; i < size; i += 1) {
+    chars.push(unlockedChars[Math.floor(rng() * unlockedChars.length)])
+  }
+
+  if (unlockedChars.length > 1 && chars.every((char) => char === chars[0])) {
+    const others = unlockedChars.filter((char) => char !== chars[0])
+    const pos = Math.floor(rng() * size)
+    chars[pos] = others[Math.floor(rng() * others.length)]
+  }
+
+  return chars.join('')
 }
 
 function choosePromptChar(

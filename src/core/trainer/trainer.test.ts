@@ -161,6 +161,75 @@ describe('createTrainer', () => {
   })
 })
 
+describe('createTrainer — group mode', () => {
+  const groupConfig = {
+    ...baseConfig,
+    promptMode: 'group',
+    groupSize: 5,
+  } satisfies TrainerConfig
+
+  it('defaults to single-character prompts (backward compatible)', () => {
+    const trainer = createTrainer(baseConfig)
+    expect(trainer.nextPrompt().text).toHaveLength(1)
+  })
+
+  it('produces groups of groupSize from the unlocked set only', () => {
+    const trainer = createTrainer(groupConfig)
+    for (const text of promptTexts(trainer, 20)) {
+      expect(text).toHaveLength(5)
+      expect([...text].every((c) => c === 'K' || c === 'M')).toBe(true)
+    }
+  })
+
+  it('validates groupSize', () => {
+    expect(() =>
+      createTrainer({ ...groupConfig, groupSize: 0 }),
+    ).toThrow(RangeError)
+  })
+
+  it('scores each position, with per-char breakdown and whole-group correct', () => {
+    const trainer = createTrainer(groupConfig)
+    const prompt = trainer.nextPrompt() // e.g. "KMKMK"
+    const wrong = swapFirst(prompt.text) // one position off
+
+    const result = trainer.submit(prompt.id, wrong)
+
+    expect(result.correct).toBe(false) // not every position matched
+    expect(result.perChar).toHaveLength(5)
+    expect(result.perChar?.filter((c) => c.correct)).toHaveLength(4)
+    expect(result.perChar?.[0].correct).toBe(false)
+  })
+
+  it('counts every position as an attempt for its character', () => {
+    const trainer = createTrainer(groupConfig)
+    const prompt = trainer.nextPrompt()
+    trainer.submit(prompt.id, prompt.text) // all correct
+
+    const totalAttempts = trainer
+      .summary()
+      .perChar.reduce((n, c) => n + c.attempts, 0)
+    expect(totalAttempts).toBe(5)
+  })
+
+  it('marks missing trailing characters as incorrect', () => {
+    const trainer = createTrainer(groupConfig)
+    const prompt = trainer.nextPrompt()
+
+    const result = trainer.submit(prompt.id, prompt.text.slice(0, 2))
+
+    expect(result.correct).toBe(false)
+    expect(result.perChar?.slice(2).every((c) => !c.correct && c.received === '')).toBe(
+      true,
+    )
+  })
+})
+
+/** Flip the first character to the other unlocked one (K<->M). */
+function swapFirst(text: string): string {
+  const other = text[0] === 'K' ? 'M' : 'K'
+  return other + text.slice(1)
+}
+
 function promptTexts(trainer: Trainer, count: number): string[] {
   return Array.from({ length: count }, () => trainer.nextPrompt().text)
 }

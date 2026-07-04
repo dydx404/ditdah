@@ -38,6 +38,8 @@ describe('settings persistence', () => {
       toneHz: 720,
       volume: 0.45,
       roundLength: 40,
+      strictGate: false,
+      answerSounds: false,
       showPatterns: true,
     } satisfies Settings
 
@@ -64,6 +66,8 @@ describe('settings persistence', () => {
       toneHz: 1000,
       volume: 0,
       roundLength: 5,
+      strictGate: true,
+      answerSounds: true,
       showPatterns: false,
     })
   })
@@ -82,6 +86,19 @@ describe('settings persistence', () => {
       false,
     )
     expect(normalizeSettings({ showPatterns: true }).showPatterns).toBe(true)
+  })
+
+  it('defaults answer behavior on and preserves explicit opt-outs', () => {
+    expect(DEFAULT_SETTINGS.strictGate).toBe(true)
+    expect(DEFAULT_SETTINGS.answerSounds).toBe(true)
+    expect(normalizeSettings({}).strictGate).toBe(true)
+    expect(normalizeSettings({}).answerSounds).toBe(true)
+    expect(normalizeSettings({ strictGate: false }).strictGate).toBe(false)
+    expect(normalizeSettings({ answerSounds: false }).answerSounds).toBe(false)
+    expect(normalizeSettings({ strictGate: 'no' as never }).strictGate).toBe(true)
+    expect(normalizeSettings({ answerSounds: 'no' as never }).answerSounds).toBe(
+      true,
+    )
   })
 
   it('clamps effective speed when character speed is lowered', () => {
@@ -121,6 +138,14 @@ describe('SettingsPanel', () => {
     })
 
     expect(loadSettings().roundLength).toBe(50)
+
+    fireEvent.click(
+      screen.getByLabelText('Strict mode (type misses back to continue)'),
+    )
+    fireEvent.click(screen.getByLabelText('Answer sounds'))
+
+    expect(loadSettings().strictGate).toBe(false)
+    expect(loadSettings().answerSounds).toBe(false)
   })
 })
 

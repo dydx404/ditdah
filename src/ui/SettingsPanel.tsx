@@ -96,6 +96,18 @@ export function SettingsPanel({
             onChange={(roundLength) => update({ roundLength })}
           />
           <SettingToggle
+            label="Strict mode (type misses back to continue)"
+            hint="On by default: missed characters must be echoed once before moving on."
+            checked={settings.strictGate}
+            onChange={(strictGate) => update({ strictGate })}
+          />
+          <SettingToggle
+            label="Answer sounds"
+            hint="Play short correct and wrong cues after each answer."
+            checked={settings.answerSounds}
+            onChange={(answerSounds) => update({ answerSounds })}
+          />
+          <SettingToggle
             label="Show dit/dah patterns"
             hint="Off by default — learning by ear is the point. Turn on for a visual reference."
             checked={settings.showPatterns}

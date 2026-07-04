@@ -1,40 +1,35 @@
 /**
  * UI answer cues — short, non-Morse audio feedback on submit.
  *
- * These are deliberately NOT sidetone: they live in different pitch registers
- * (well above / below a typical 500–700 Hz sidetone) so the ear never confuses
- * a cue with a character. We reuse the frozen ToneEngine — a cue is just a tiny
- * KeyingElement sequence — so there's a single AudioContext and no extra Web
- * Audio plumbing.
+ * Played through the engine's `cue()` voice — a warm plucked mallet/bell tone
+ * (fast attack, natural decay) pitched away from the sidetone, so cues sound
+ * instrument-y (Duolingo-ish) rather than like a beep:
  *
- *   correct → a quick high "di-dit" (reward)
- *   wrong   → one low, blunt tone (buzz)
+ *   correct → a bright descending two-note "ding-dong" (a bell/doorbell reward)
+ *   wrong   → a single low "bong" (one note — plainly not the reward)
  */
-import type { KeyingElement } from '@/core/morse/types'
-import type { ToneEngine, PlayHandle } from '@/core/audio/types'
+import type { CueNote, ToneEngine } from '@/core/audio/types'
 
 export type Cue = 'correct' | 'wrong'
 
-/** Well above sidetone — bright and clearly "not a character." */
-const CORRECT_HZ = 880
-/** Well below sidetone — blunt and clearly "not a character." */
-const WRONG_HZ = 180
+/** A cheerful bell: G5 → C5, a descending fourth. */
+const CORRECT_NOTES: readonly CueNote[] = [
+  { hz: 784, ms: 130 }, // "ding"
+  { hz: 523, ms: 210 }, // "dong"
+]
 
-const CUE_ELEMENTS: Record<Cue, readonly KeyingElement[]> = {
-  correct: [
-    { on: true, ms: 55 },
-    { on: false, ms: 45 },
-    { on: true, ms: 70 },
-  ],
-  wrong: [{ on: true, ms: 220 }],
+/** A single low "bong": E3, clearly negative and well below the sidetone. */
+const WRONG_NOTES: readonly CueNote[] = [{ hz: 165, ms: 300 }]
+
+const CUE_NOTES: Record<Cue, readonly CueNote[]> = {
+  correct: CORRECT_NOTES,
+  wrong: WRONG_NOTES,
 }
 
-const CUE_HZ: Record<Cue, number> = {
-  correct: CORRECT_HZ,
-  wrong: WRONG_HZ,
-}
-
-/** Play an answer cue through the shared tone engine. Interrupts any playback. */
-export function playCue(engine: ToneEngine, cue: Cue): PlayHandle {
-  return engine.play(CUE_ELEMENTS[cue], CUE_HZ[cue])
+/**
+ * Play an answer cue. Returns a handle whose `done` resolves when it finishes,
+ * so callers can chain (e.g. replay the character after the "wrong" buzz).
+ */
+export function playCue(engine: ToneEngine, cue: Cue): { done: Promise<void> } {
+  return { done: engine.cue(CUE_NOTES[cue]) }
 }

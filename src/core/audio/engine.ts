@@ -15,7 +15,7 @@
  * schedule.ts and is unit-tested; this file is the thin Web Audio glue.
  */
 import type { KeyingElement } from '../morse/types'
-import type { PlayHandle, ToneEngine } from './types'
+import type { CueNote, PlayHandle, ToneEngine } from './types'
 import { buildSchedule } from './schedule'
 
 /** Fade in/out per tone edge (seconds). ~5ms is inaudible but kills clicks. */
@@ -128,6 +128,76 @@ export class WebAudioToneEngine implements ToneEngine {
         if (this.active === playback) this.stop()
       },
     }
+  }
+
+  cue(notes: readonly CueNote[]): Promise<void> {
+    if (notes.length === 0) return Promise.resolve()
+    const { ctx, master } = this.ensureContext()
+
+    // Each note is a plucked/mallet voice, not a gated beep: a fast attack then
+    // an exponential decay that rings out (like a marimba/glockenspiel), which
+    // is what makes it sound warm and "instrument-y" instead of synthetic. A
+    // few soft harmonic partials add body. Notes overlap on their tails. Runs
+    // as its own transient voice, independent of play()/this.active.
+    const ATTACK_SEC = 0.006
+    const TAIL_SEC_CUE = 0.18 // natural ring-out after each note's nominal length
+    // Fundamental + octave + double-octave. Gains sum < 1 to stay clear of clip.
+    const PARTIALS: readonly { mult: number; gain: number }[] = [
+      { mult: 1, gain: 0.5 },
+      { mult: 2, gain: 0.22 },
+      { mult: 4, gain: 0.06 },
+    ]
+
+    const nodes: AudioNode[] = []
+    let t = ctx.currentTime + LOOKAHEAD_SEC
+    let finalOsc: OscillatorNode | null = null
+    let finalStop = t
+
+    for (const note of notes) {
+      const dur = note.ms / 1000
+      const endAt = t + dur + TAIL_SEC_CUE
+
+      // Percussive envelope shared by this note's partials.
+      const env = ctx.createGain()
+      env.gain.setValueAtTime(0.0001, t)
+      env.gain.exponentialRampToValueAtTime(1, t + ATTACK_SEC)
+      env.gain.exponentialRampToValueAtTime(0.0001, endAt)
+      env.connect(master)
+      nodes.push(env)
+
+      for (const p of PARTIALS) {
+        const osc = ctx.createOscillator()
+        osc.type = 'sine'
+        osc.frequency.value = note.hz * p.mult
+        const pg = ctx.createGain()
+        pg.gain.value = p.gain
+        osc.connect(pg)
+        pg.connect(env)
+        osc.start(t)
+        osc.stop(endAt + 0.02)
+        nodes.push(osc, pg)
+        if (endAt >= finalStop) {
+          finalStop = endAt
+          finalOsc = osc
+        }
+      }
+      t += dur
+    }
+
+    return new Promise<void>((resolve) => {
+      const cleanup = () => {
+        for (const n of nodes) {
+          try {
+            n.disconnect()
+          } catch {
+            // already disconnected
+          }
+        }
+        resolve()
+      }
+      if (finalOsc) finalOsc.onended = cleanup
+      else cleanup()
+    })
   }
 
   stop(): void {

@@ -1,20 +1,36 @@
 /*
- * App shell — placeholder.
- * The real product is a single receiving-practice loop (see ARCHITECTURE.md).
- * This exists only so the scaffold renders something intentional instead of
- * the Vite boilerplate. Replaced once core/audio + core/trainer land.
+ * App root / composition.
+ * Creates the long-lived engine + trainer once and hands them to the practice
+ * screen. This is the single place that chooses the trainer implementation —
+ * swap `createStubTrainer` for `createTrainer` from '@/core/trainer' when #5
+ * merges, and delete src/ui/dev.
  */
+import { useRef } from 'react'
+import type { ToneEngine } from '@/core/audio/types'
+import { WebAudioToneEngine } from '@/core/audio'
+import type { Trainer } from '@/core/trainer/types'
+import { PracticeScreen } from '@/ui/PracticeScreen'
+import { createStubTrainer } from '@/ui/dev/stubTrainer'
+import { DEFAULT_TIMING, DEFAULT_TRAINER } from '@/app/config'
+
 function App() {
+  // One engine and one trainer for the app's lifetime.
+  const engineRef = useRef<ToneEngine | null>(null)
+  const trainerRef = useRef<Trainer | null>(null)
+  if (!engineRef.current) engineRef.current = new WebAudioToneEngine()
+  if (!trainerRef.current) {
+    trainerRef.current = createStubTrainer({
+      ...DEFAULT_TRAINER,
+      seed: Math.floor(Math.random() * 0xffffffff),
+    })
+  }
+
   return (
-    <main className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="font-mono text-5xl font-bold tracking-tight">
-        dit<span className="text-accent">dah</span>
-      </h1>
-      <p className="max-w-md text-muted">
-        Learn Morse the way operators actually copy it — by sound. The trainer
-        is on its way.
-      </p>
-    </main>
+    <PracticeScreen
+      trainer={trainerRef.current}
+      engine={engineRef.current}
+      timing={DEFAULT_TIMING}
+    />
   )
 }
 

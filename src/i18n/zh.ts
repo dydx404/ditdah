@@ -5,6 +5,8 @@
 import type { Messages } from './en'
 
 export const zh: Partial<Messages> = {
+  'app.loading': '加载中…',
+  'mode.aria': '练习模式',
   'mode.intro':
     '选择一个模式，用耳朵抄收摩尔斯电码。你会从两个字符开始，逐步解锁更多。',
   'mode.learn.name': '学习',
@@ -22,6 +24,15 @@ export const zh: Partial<Messages> = {
   'action.start': '开始收听',
   'action.soon': '即将推出',
   'action.close': '关闭设置',
+  'action.openHistory': '打开历史记录',
+  'action.openSettings': '打开设置',
+  'action.closeHistory': '关闭历史记录',
+  'action.deleteLast': '删除最后一个字符',
+  'action.submit': '提交',
+  'action.replaySpace': '重播（空格）',
+  'action.practiceAgain': '再练一轮',
+  'action.clearHistory': '清空历史记录',
+  'action.play': '播放',
 
   'settings.title': '设置',
   'settings.subtitle': '调节声音，保持节奏。',
@@ -43,4 +54,51 @@ export const zh: Partial<Messages> = {
   'unit.hz': 'Hz',
   'unit.prompts': '题',
   'unit.chars': '个',
+
+  'stats.characters': '当前字符',
+  'stats.acc': '准确率',
+  'stats.copied': '已抄收',
+  'stats.correct': '正确',
+  'stats.wpm': 'WPM',
+  'stats.streakTitle': '连续 {count} 天练习',
+  'stats.dayStreak': ' 天连续练习',
+  'daily.today': '今天',
+  'daily.title': '今天 {completed} / {goal}',
+  'practice.copyGroupHint': '抄收这一组 · 按 Enter 提交',
+  'practice.typeToContinue': '输入 {char} 继续',
+  'practice.echoToContinue': '复述一次再继续',
+  'practice.listeningHint': '先听，再输入你听到的字符',
+
+  'feedback.nice': '✓ 很好',
+  'feedback.cleanCopy': '✓ 抄收准确',
+  'feedback.youTypedExpected': '你输入了 {got}，正确是 {expected}',
+  'feedback.youTyped': '你输入了 {got}',
+
+  'buffer.aria': '你目前抄收的内容',
+  'keypad.aria': '答题键盘',
+  'keypad.answer': '选择 {char}',
+
+  'summary.roundComplete': '本轮完成',
+  'summary.accuracy': '准确率',
+  'summary.unlocked': '🔓 已解锁 {chars}',
+  'summary.keepWorking': '继续练习 ',
+  'summary.pressSpace': '按空格',
+
+  'history.title': '历史记录',
+  'history.subtitle': '最近几轮会保存在这台设备上',
+  'history.empty': '完成一轮后会开始记录历史',
+  'history.accuracy': '准确率 {percent}%',
+  'history.unknownTime': '未知时间',
+
+  'reference.title': '字符参考',
+  'reference.show': '显示',
+  'reference.hide': '隐藏',
+  'reference.aria': 'Koch 字符参考',
+  'reference.colChar': '字符',
+  'reference.colStatus': '状态',
+  'reference.colPattern': '图案',
+  'reference.colSound': '声音',
+  'reference.unlocked': '已解锁',
+  'reference.upcoming': '待解锁',
+  'reference.listen': '播放字符 {char}',
 }

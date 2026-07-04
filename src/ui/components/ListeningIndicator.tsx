@@ -4,8 +4,11 @@
  * by ear, so we never show the letter (or dots/dashes) here.
  */
 import { motion } from 'motion/react'
+import { useT } from '@/i18n'
 
 export function ListeningIndicator() {
+  const t = useT()
+
   return (
     <div className="flex flex-col items-center gap-8">
       <motion.div
@@ -20,7 +23,7 @@ export function ListeningIndicator() {
         />
       </motion.div>
       <p className="font-mono text-sm tracking-wide text-muted">
-        listen — then type what you heard
+        {t('practice.listeningHint')}
       </p>
     </div>
   )

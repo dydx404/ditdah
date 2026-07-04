@@ -22,9 +22,8 @@ describe('i18n translate', () => {
   })
 
   it('interpolates named params', () => {
-    // No catalog key needs params today, so check the mechanism directly via a
-    // key whose text we control: reuse a real key and confirm no-op when absent.
-    expect(translate('en', 'unit.prompts')).toBe('prompts')
+    expect(translate('en', 'keypad.answer', { char: 'K' })).toBe('Answer K')
+    expect(translate('zh', 'keypad.answer', { char: 'K' })).toBe('选择 K')
   })
 
   it('validates locales', () => {

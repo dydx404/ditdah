@@ -26,7 +26,11 @@ export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps)
       </h1>
       <p className="max-w-xs text-muted">{t('mode.intro')}</p>
 
-      <div className="grid w-full grid-cols-2 gap-3" role="group" aria-label="Practice modes">
+      <div
+        className="grid w-full grid-cols-2 gap-3"
+        role="group"
+        aria-label={t('mode.aria')}
+      >
         {PRACTICE_MODES.map((mode) => {
           const isActive = mode.id === active
           return (

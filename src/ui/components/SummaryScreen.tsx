@@ -6,6 +6,7 @@
  */
 import { motion } from 'motion/react'
 import type { RoundSummary } from '../useTrainerSession'
+import { useT } from '@/i18n'
 
 interface SummaryScreenProps {
   summary: RoundSummary
@@ -14,6 +15,7 @@ interface SummaryScreenProps {
 }
 
 export function SummaryScreen({ summary, streak = 0, onAgain }: SummaryScreenProps) {
+  const t = useT()
   const accuracy = Math.round(summary.accuracy * 100)
   // Characters worth revisiting: missed at least once, weakest first.
   const focus = summary.perChar.filter((c) => c.correct < c.attempts).slice(0, 3)
@@ -26,32 +28,34 @@ export function SummaryScreen({ summary, streak = 0, onAgain }: SummaryScreenPro
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
     >
       <p className="font-mono text-sm uppercase tracking-widest text-muted">
-        round complete
+        {t('summary.roundComplete')}
       </p>
 
       <div className="flex flex-col items-center">
         <span className="font-mono text-6xl font-bold tabular-nums text-accent">
           {accuracy}%
         </span>
-        <span className="font-mono text-xs text-muted">accuracy</span>
+        <span className="font-mono text-xs text-muted">
+          {t('summary.accuracy')}
+        </span>
       </div>
 
       <dl className="flex items-center justify-center gap-6 font-mono text-sm">
-        <Stat label="copied" value={String(summary.total)} />
-        <Stat label="correct" value={String(summary.correct)} />
-        <Stat label="wpm" value={String(summary.effectiveWpm)} />
+        <Stat label={t('stats.copied')} value={String(summary.total)} />
+        <Stat label={t('stats.correct')} value={String(summary.correct)} />
+        <Stat label={t('stats.wpm')} value={String(summary.effectiveWpm)} />
         {streak > 0 && <Stat label="🔥" value={String(streak)} />}
       </dl>
 
       {summary.unlocked.length > 0 && (
         <p className="font-mono text-sm text-accent">
-          🔓 unlocked {summary.unlocked.join(', ')}
+          {t('summary.unlocked', { chars: summary.unlocked.join(', ') })}
         </p>
       )}
 
       {focus.length > 0 && (
         <div className="font-mono text-xs text-muted">
-          <span className="text-muted/70">keep working on </span>
+          <span className="text-muted/70">{t('summary.keepWorking')}</span>
           {focus.map((c, i) => (
             <span key={c.char}>
               {i > 0 && ' · '}
@@ -67,9 +71,9 @@ export function SummaryScreen({ summary, streak = 0, onAgain }: SummaryScreenPro
         onClick={onAgain}
         className="rounded-lg bg-accent px-6 py-3 font-mono font-semibold text-bg transition hover:brightness-110"
       >
-        Practice again
+        {t('action.practiceAgain')}
       </button>
-      <p className="font-mono text-xs text-muted/70">press Space</p>
+      <p className="font-mono text-xs text-muted/70">{t('summary.pressSpace')}</p>
     </motion.div>
   )
 }

@@ -1,3 +1,5 @@
+import { useT } from '@/i18n'
+
 export const DAILY_GOAL = 3
 
 interface DailyGoalProps {
@@ -6,6 +8,7 @@ interface DailyGoalProps {
 }
 
 export function DailyGoal({ completed, goal = DAILY_GOAL }: DailyGoalProps) {
+  const t = useT()
   const safeGoal = Math.max(1, Math.round(goal))
   const safeCompleted = Math.max(0, Math.floor(completed))
   const met = safeCompleted >= safeGoal
@@ -18,7 +21,7 @@ export function DailyGoal({ completed, goal = DAILY_GOAL }: DailyGoalProps) {
           ? 'border-accent bg-accent text-bg'
           : 'border-border bg-surface text-muted',
       ].join(' ')}
-      title={`${safeCompleted} / ${safeGoal} today`}
+      title={t('daily.title', { completed: safeCompleted, goal: safeGoal })}
     >
       {met && (
         <span aria-hidden="true" className="font-bold">
@@ -28,7 +31,9 @@ export function DailyGoal({ completed, goal = DAILY_GOAL }: DailyGoalProps) {
       <span>
         {safeCompleted} / {safeGoal}
       </span>
-      <span className={met ? 'text-bg/80' : 'text-muted/70'}>today</span>
+      <span className={met ? 'text-bg/80' : 'text-muted/70'}>
+        {t('daily.today')}
+      </span>
     </div>
   )
 }

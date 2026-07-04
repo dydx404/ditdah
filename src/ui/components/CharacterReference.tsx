@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { KOCH_ORDER, renderToElements, symbolsFor } from '@/core/morse'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
+import { useT } from '@/i18n'
 
 interface CharacterReferenceProps {
   unlocked: readonly string[]
@@ -27,6 +28,7 @@ export function CharacterReference({
   engine,
   showPatterns = false,
 }: CharacterReferenceProps) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const unlockedSet = useMemo(() => new Set(unlocked), [unlocked])
 
@@ -43,8 +45,8 @@ export function CharacterReference({
         onClick={() => setOpen((current) => !current)}
         className="flex w-full items-center justify-between gap-4 font-mono text-xs text-muted transition hover:text-text"
       >
-        <span>Character reference</span>
-        <span>{open ? 'hide' : 'show'}</span>
+        <span>{t('reference.title')}</span>
+        <span>{open ? t('reference.hide') : t('reference.show')}</span>
       </button>
 
       {open && (
@@ -53,7 +55,7 @@ export function CharacterReference({
           className="mt-3 max-h-56 overflow-y-auto rounded-md border border-border bg-bg/40"
         >
           <table
-            aria-label="Koch character reference"
+            aria-label={t('reference.aria')}
             className="w-full border-collapse font-mono text-xs"
           >
             <thead className="sticky top-0 bg-surface text-muted">
@@ -62,18 +64,18 @@ export function CharacterReference({
                   #
                 </th>
                 <th scope="col" className="px-3 py-2 text-left font-normal">
-                  char
+                  {t('reference.colChar')}
                 </th>
                 <th scope="col" className="px-3 py-2 text-left font-normal">
-                  status
+                  {t('reference.colStatus')}
                 </th>
                 {showPatterns && (
                   <th scope="col" className="px-3 py-2 text-left font-normal">
-                    pattern
+                    {t('reference.colPattern')}
                   </th>
                 )}
                 <th scope="col" className="px-3 py-2 text-right font-normal">
-                  sound
+                  {t('reference.colSound')}
                 </th>
               </tr>
             </thead>
@@ -87,7 +89,7 @@ export function CharacterReference({
                     </td>
                     <td className="px-3 py-2 text-text">{char}</td>
                     <td className={isUnlocked ? 'px-3 py-2 text-accent' : 'px-3 py-2 text-muted'}>
-                      {isUnlocked ? 'unlocked' : 'upcoming'}
+                      {isUnlocked ? t('reference.unlocked') : t('reference.upcoming')}
                     </td>
                     {showPatterns && (
                       <td className="px-3 py-2 tracking-wider text-muted">
@@ -97,11 +99,11 @@ export function CharacterReference({
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"
-                        aria-label={`Listen to character ${char}`}
+                        aria-label={t('reference.listen', { char })}
                         onClick={() => listenTo(char)}
                         className="rounded border border-border px-2 py-1 text-muted transition hover:text-text"
                       >
-                        play
+                        {t('action.play')}
                       </button>
                     </td>
                   </tr>

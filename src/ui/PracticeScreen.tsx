@@ -28,6 +28,7 @@ import { SettingsPanel } from './SettingsPanel'
 import { HistoryPanel } from './HistoryPanel'
 import { roundsToday, type RoundRecord } from '@/app/history'
 import type { RoundSummary } from './useTrainerSession'
+import { useT } from '@/i18n'
 
 interface PracticeScreenProps {
   trainer: Trainer
@@ -64,6 +65,7 @@ export function PracticeScreen({
   onRoundComplete,
   onClearHistory,
 }: PracticeScreenProps) {
+  const t = useT()
   const session = useTrainerSession({
     trainer,
     engine,
@@ -125,7 +127,7 @@ export function PracticeScreen({
           <>
             <button
               type="button"
-              aria-label="Open history"
+              aria-label={t('action.openHistory')}
               onClick={() => setHistoryOpen(true)}
               className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted transition hover:text-text"
             >
@@ -133,7 +135,7 @@ export function PracticeScreen({
             </button>
             <button
               type="button"
-              aria-label="Open settings"
+              aria-label={t('action.openSettings')}
               onClick={() => setSettingsOpen(true)}
               className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
             >
@@ -175,7 +177,7 @@ export function PracticeScreen({
                 <>
                   <BufferSlots length={session.promptLength} value={session.buffer} />
                   <p className="font-mono text-xs text-muted/70">
-                    copy the group · Enter to submit
+                    {t('practice.copyGroupHint')}
                   </p>
                 </>
               ) : (
@@ -209,8 +211,7 @@ export function PracticeScreen({
             >
               <FeedbackReveal result={session.lastResult} />
               <p className="font-mono text-sm text-accent">
-                type <span className="font-bold">{session.reveal}</span> to
-                continue
+                {t('practice.typeToContinue', { char: session.reveal ?? '' })}
               </p>
             </motion.div>
           )}
@@ -250,7 +251,7 @@ export function PracticeScreen({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  aria-label="Delete last character"
+                  aria-label={t('action.deleteLast')}
                   onClick={session.backspace}
                   disabled={session.buffer.length === 0}
                   className="h-10 rounded-lg border border-border px-4 font-mono text-sm text-muted transition hover:text-text disabled:opacity-40"
@@ -263,7 +264,7 @@ export function PracticeScreen({
                   disabled={session.buffer.length === 0}
                   className="h-10 rounded-lg bg-accent px-5 font-mono text-sm font-semibold text-bg transition hover:brightness-110 disabled:opacity-40"
                 >
-                  Submit
+                  {t('action.submit')}
                 </button>
               </div>
             )}
@@ -282,10 +283,10 @@ export function PracticeScreen({
               onClick={replay}
               className="rounded border border-border px-3 py-1 text-muted transition hover:text-text"
             >
-              replay (Space)
+              {t('action.replaySpace')}
             </button>
           )}
-          {phase === 'retry' && <span>echo it to continue</span>}
+          {phase === 'retry' && <span>{t('practice.echoToContinue')}</span>}
         </div>
       </footer>
     </div>

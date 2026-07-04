@@ -28,12 +28,12 @@ export function SettingsPanel({
     <div className="fixed inset-0 z-30">
       <button
         type="button"
-        aria-label="Close settings"
+        aria-label={t('action.close')}
         className="absolute inset-0 h-full w-full cursor-default bg-bg/70"
         onClick={onClose}
       />
       <aside
-        aria-label="Settings"
+        aria-label={t('settings.title')}
         className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col border-l border-border bg-surface p-5 shadow-2xl"
       >
         <div className="mb-6 flex items-center justify-between gap-4">
@@ -58,7 +58,11 @@ export function SettingsPanel({
             <span className="font-mono text-sm text-muted">
               {t('settings.language')}
             </span>
-            <div className="flex gap-2" role="group" aria-label={t('settings.language')}>
+            <div
+              className="flex gap-2"
+              role="group"
+              aria-label={t('settings.language')}
+            >
               {LOCALES.map((loc) => (
                 <button
                   key={loc.id}

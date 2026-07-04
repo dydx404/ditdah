@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react'
 import type { SessionSummary } from '@/core/trainer/types'
 import { DailyGoal } from './DailyGoal'
+import { useT } from '@/i18n'
 
 interface StatsBarProps {
   unlocked: readonly string[]
@@ -26,10 +27,14 @@ export function StatsBar({
   roundsToday = 0,
   actions,
 }: StatsBarProps) {
+  const t = useT()
   const accuracy = Math.round(summary.accuracy * 100)
   return (
     <header className="flex w-full items-center justify-between gap-4 px-5 py-4">
-      <div className="flex flex-wrap items-center gap-1.5" aria-label="Your characters">
+      <div
+        className="flex flex-wrap items-center gap-1.5"
+        aria-label={t('stats.characters')}
+      >
         {unlocked.map((c) => (
           <span
             key={c}
@@ -42,30 +47,30 @@ export function StatsBar({
       <div className="flex items-center gap-4">
         <dl className="flex items-center gap-5 font-mono text-sm">
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-muted">acc</dt>
+            <dt className="text-muted">{t('stats.acc')}</dt>
             <dd className="tabular-nums text-text">
               {summary.total ? `${accuracy}%` : '—'}
             </dd>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-muted">copied</dt>
+            <dt className="text-muted">{t('stats.copied')}</dt>
             <dd className="tabular-nums text-text">{summary.total}</dd>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-muted">wpm</dt>
+            <dt className="text-muted">{t('stats.wpm')}</dt>
             <dd className="tabular-nums text-text">{effectiveWpm}</dd>
           </div>
           {streak > 0 && (
             <div
               className="flex items-baseline gap-1.5"
-              title={`${streak}-day streak`}
+              title={t('stats.streakTitle', { count: streak })}
             >
               <dt className="text-muted" aria-hidden="true">
                 🔥
               </dt>
               <dd className="tabular-nums text-accent">
                 {streak}
-                <span className="sr-only"> day streak</span>
+                <span className="sr-only">{t('stats.dayStreak')}</span>
               </dd>
             </div>
           )}

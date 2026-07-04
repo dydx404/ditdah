@@ -8,6 +8,8 @@
  */
 export const en = {
   // Home / mode select
+  'app.loading': 'loading…',
+  'mode.aria': 'Practice modes',
   'mode.intro':
     'Pick a mode, then copy Morse by ear. You start with two characters and unlock more as you go.',
   'mode.learn.name': 'Learn',
@@ -26,6 +28,15 @@ export const en = {
   'action.start': 'Start listening',
   'action.soon': 'soon',
   'action.close': 'Close settings',
+  'action.openHistory': 'Open history',
+  'action.openSettings': 'Open settings',
+  'action.closeHistory': 'Close history',
+  'action.deleteLast': 'Delete last character',
+  'action.submit': 'Submit',
+  'action.replaySpace': 'replay (Space)',
+  'action.practiceAgain': 'Practice again',
+  'action.clearHistory': 'Clear history',
+  'action.play': 'play',
 
   // Settings
   'settings.title': 'Settings',
@@ -51,6 +62,59 @@ export const en = {
   'unit.hz': 'Hz',
   'unit.prompts': 'prompts',
   'unit.chars': 'chars',
+
+  // HUD / practice loop
+  'stats.characters': 'Your characters',
+  'stats.acc': 'acc',
+  'stats.copied': 'copied',
+  'stats.correct': 'correct',
+  'stats.wpm': 'wpm',
+  'stats.streakTitle': '{count}-day streak',
+  'stats.dayStreak': ' day streak',
+  'daily.today': 'today',
+  'daily.title': '{completed} / {goal} today',
+  'practice.copyGroupHint': 'copy the group · Enter to submit',
+  'practice.typeToContinue': 'type {char} to continue',
+  'practice.echoToContinue': 'echo it to continue',
+  'practice.listeningHint': 'listen — then type what you heard',
+
+  // Feedback
+  'feedback.nice': '✓ nice',
+  'feedback.cleanCopy': '✓ clean copy',
+  'feedback.youTypedExpected': 'you typed {got} — that was {expected}',
+  'feedback.youTyped': 'you typed {got}',
+
+  // Group input
+  'buffer.aria': 'Your copy so far',
+  'keypad.aria': 'Answer keypad',
+  'keypad.answer': 'Answer {char}',
+
+  // Summary
+  'summary.roundComplete': 'round complete',
+  'summary.accuracy': 'accuracy',
+  'summary.unlocked': '🔓 unlocked {chars}',
+  'summary.keepWorking': 'keep working on ',
+  'summary.pressSpace': 'press Space',
+
+  // History
+  'history.title': 'History',
+  'history.subtitle': 'Recent rounds stay on this device',
+  'history.empty': 'Finish a round to start your history',
+  'history.accuracy': 'Accuracy {percent}%',
+  'history.unknownTime': 'unknown time',
+
+  // Character reference
+  'reference.title': 'Character reference',
+  'reference.show': 'show',
+  'reference.hide': 'hide',
+  'reference.aria': 'Koch character reference',
+  'reference.colChar': 'char',
+  'reference.colStatus': 'status',
+  'reference.colPattern': 'pattern',
+  'reference.colSound': 'sound',
+  'reference.unlocked': 'unlocked',
+  'reference.upcoming': 'upcoming',
+  'reference.listen': 'Listen to character {char}',
 } as const
 
 export type MessageKey = keyof typeof en

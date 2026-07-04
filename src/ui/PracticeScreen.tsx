@@ -74,7 +74,7 @@ export function PracticeScreen({
       if (phase === 'idle' && (e.key === ' ' || e.key === 'Enter')) {
         e.preventDefault()
         start()
-      } else if (phase === 'listening' && e.key === ' ') {
+      } else if ((phase === 'listening' || phase === 'retry') && e.key === ' ') {
         e.preventDefault()
         replay()
       } else if (phase === 'summary' && (e.key === ' ' || e.key === 'Enter')) {
@@ -180,6 +180,22 @@ export function PracticeScreen({
             </motion.div>
           )}
 
+          {phase === 'retry' && session.lastResult && (
+            <motion.div
+              key="retry"
+              className="flex flex-col items-center gap-5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <FeedbackReveal result={session.lastResult} />
+              <p className="font-mono text-sm text-accent">
+                type <span className="font-bold">{session.reveal}</span> to
+                continue
+              </p>
+            </motion.div>
+          )}
+
           {phase === 'summary' && session.roundSummary && (
             <motion.div
               key="summary"
@@ -198,12 +214,12 @@ export function PracticeScreen({
       </main>
 
       <footer className="flex flex-col">
-        {(phase === 'listening' || phase === 'feedback') && (
+        {(phase === 'listening' || phase === 'feedback' || phase === 'retry') && (
           <div className="px-5 pb-3">
             <AnswerKeypad
               chars={session.unlocked}
-              onAnswer={session.answer}
-              disabled={phase !== 'listening'}
+              onAnswer={phase === 'retry' ? session.retryAnswer : session.answer}
+              disabled={phase === 'feedback'}
             />
           </div>
         )}
@@ -214,7 +230,7 @@ export function PracticeScreen({
           showPatterns={settings.showPatterns}
         />
         <div className="flex h-12 items-center justify-center gap-4 px-6 font-mono text-xs text-muted/70">
-          {phase === 'listening' && (
+          {(phase === 'listening' || phase === 'retry') && (
             <button
               type="button"
               onClick={replay}
@@ -223,7 +239,7 @@ export function PracticeScreen({
               replay (Space)
             </button>
           )}
-          {phase === 'feedback' && <span>type the letter you hear</span>}
+          {phase === 'retry' && <span>echo it to continue</span>}
         </div>
       </footer>
     </div>

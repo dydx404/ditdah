@@ -5,8 +5,14 @@
  * then "practice again". The loop within a round:
  *   idle → (start, needs a user gesture to unlock audio)
  *        → listening (tone plays; the character is NOT shown — sound-first)
- *        → feedback (reveal on miss, replay the correct sound) → listening → …
+ *        → feedback (correct: cue + green flash, then auto-advance)
+ *        → retry (miss: buzz + reveal + replay; user must echo it to continue)
  *        → summary (after the last prompt) → (again) → listening → …
+ *
+ * "Force continue only when passed": a miss doesn't auto-advance. It's scored
+ * once (the first attempt), then the learner must type the character back to
+ * move on. The retype is a reinforcement rep, not re-scored — otherwise
+ * accuracy and unlocks would be trivially gamed.
  *
  * Round stats are accumulated here from each AnswerResult, so the trainer stays
  * a pure per-answer scorer. Trainer and ToneEngine are injected for testability.
@@ -15,6 +21,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { renderToElements } from '@/core/morse'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
+import { playCue } from './cues'
 import type {
   AnswerResult,
   CharStat,
@@ -23,7 +30,7 @@ import type {
   Trainer,
 } from '@/core/trainer/types'
 
-export type Phase = 'idle' | 'listening' | 'feedback' | 'summary'
+export type Phase = 'idle' | 'listening' | 'feedback' | 'retry' | 'summary'
 
 /** Keys we treat as an answer (letters, digits, and supported punctuation). */
 const VALID_KEY = /^[a-z0-9.,?/=+-]$/i
@@ -50,7 +57,7 @@ export interface UseTrainerSessionOptions {
   roundLength?: number
   /** How long to hold feedback on a correct answer before the next prompt. */
   correctHoldMs?: number
-  /** How long to hold feedback on a miss (longer — the learner studies it). */
+  /** @deprecated Misses now gate on an echo instead of auto-advancing. Unused. */
   wrongHoldMs?: number
   /** Called after each scored answer — the app persists progress here. */
   onAnswered?: (result: AnswerResult) => void
@@ -75,6 +82,8 @@ export interface SessionView {
   again: () => void
   /** Submit an answer for the active prompt (used by on-screen tap input). */
   answer: (key: string) => void
+  /** Echo the revealed character during the `retry` gate (tap input path). */
+  retryAnswer: (key: string) => void
   replay: () => void
   dismissToast: () => void
 }
@@ -83,7 +92,6 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
   const { trainer, engine, timing, onAnswered, onRoundComplete } = opts
   const roundLength = opts.roundLength ?? DEFAULT_ROUND_LENGTH
   const correctHoldMs = opts.correctHoldMs ?? 450
-  const wrongHoldMs = opts.wrongHoldMs ?? 1300
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [lastResult, setLastResult] = useState<AnswerResult | null>(null)
@@ -94,6 +102,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
 
   const promptRef = useRef<Prompt | null>(null) // active prompt for submit()
   const textRef = useRef<string | null>(null) // current char, for replay
+  const retryCharRef = useRef<string | null>(null) // char to echo during retry
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Round-local accumulation (reset each round).
@@ -151,6 +160,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     roundStatsRef.current = new Map()
     roundCountRef.current = 0
     roundUnlocksRef.current = []
+    retryCharRef.current = null
     setRoundSummary(null)
     playNext()
   }, [playNext])
@@ -190,35 +200,65 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
 
       setLastResult(result)
       setSummary(trainer.summary())
-      setPhase('feedback')
-      if (!result.correct) {
-        setReveal(result.expected)
-        playTone(result.expected) // let them hear the correct sound
-      }
       if (result.unlocked) setUnlockToast(result.unlocked)
-      onAnswered?.(result) // app persists progress
+      onAnswered?.(result) // app persists progress (first attempt is the score)
 
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(
-        advance,
-        result.correct ? correctHoldMs : wrongHoldMs,
-      )
+      if (result.correct) {
+        setReveal(null)
+        setPhase('feedback')
+        playCue(engine, 'correct')
+        if (timerRef.current) clearTimeout(timerRef.current)
+        timerRef.current = setTimeout(advance, correctHoldMs)
+      } else {
+        // Gate: buzz, reveal the answer, replay it, and wait for the echo.
+        const expected = result.expected
+        setReveal(expected)
+        retryCharRef.current = expected
+        setPhase('retry')
+        playCue(engine, 'wrong').done.then(() => {
+          if (retryCharRef.current === expected) playTone(expected)
+        })
+      }
     },
-    [trainer, playTone, advance, correctHoldMs, wrongHoldMs, onAnswered],
+    [trainer, engine, playTone, advance, correctHoldMs, onAnswered],
   )
 
-  // Capture answers only while listening — no typing ahead during feedback.
+  // The `retry` gate: the char is revealed, so this retype is a reinforcement
+  // rep, not a scored answer. Only a correct echo advances; a wrong key buzzes.
+  const handleRetry = useCallback(
+    (key: string) => {
+      const expected = retryCharRef.current
+      if (!expected) return
+      if (key.toUpperCase() !== expected) {
+        playCue(engine, 'wrong')
+        return
+      }
+      retryCharRef.current = null
+      // Display-only success flash (not fed to the trainer or onAnswered).
+      setLastResult({ correct: true, expected, received: expected, unlocked: null })
+      setReveal(null)
+      setPhase('feedback')
+      playCue(engine, 'correct')
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(advance, correctHoldMs)
+    },
+    [engine, advance, correctHoldMs],
+  )
+
+  // Capture keys while listening (score) or retrying (echo). Never during the
+  // correct-answer feedback flash — no typing ahead into the next prompt.
   useEffect(() => {
-    if (phase !== 'listening') return
+    if (phase !== 'listening' && phase !== 'retry') return
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       if (!VALID_KEY.test(e.key)) return
       e.preventDefault()
-      handleAnswer(e.key)
+      if (phase === 'listening') handleAnswer(e.key)
+      else handleRetry(e.key)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, handleAnswer])
+  }, [phase, handleAnswer, handleRetry])
 
   // Stop audio and clear timers on unmount.
   useEffect(
@@ -242,6 +282,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     start,
     again,
     answer: handleAnswer,
+    retryAnswer: handleRetry,
     replay,
     dismissToast,
   }

@@ -136,6 +136,7 @@ function App() {
       timing={timing}
       settings={settings}
       onSettingsChange={handleSettingsChange}
+      roundLength={settings.roundLength}
       streak={streakCount}
       history={history}
       onAnswered={handleAnswered}

@@ -31,6 +31,7 @@ interface PracticeScreenProps {
   timing: TimingConfig
   settings: Settings
   onSettingsChange: (settings: Settings) => void
+  roundLength: number
   /** Current daily streak (consecutive days practiced). */
   streak?: number
   /** Recent completed rounds, newest first. */
@@ -48,6 +49,7 @@ export function PracticeScreen({
   timing,
   settings,
   onSettingsChange,
+  roundLength,
   streak,
   history = [],
   onAnswered,
@@ -58,6 +60,7 @@ export function PracticeScreen({
     trainer,
     engine,
     timing,
+    roundLength,
     onAnswered,
     onRoundComplete,
   })

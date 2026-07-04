@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#32 — Daily goal pill** (`feat/daily-goal`): derive today's round count
-  from session history and show a compact 3-round goal in the HUD. PR #35 is
+- **#33 — Configurable round length** (`feat/round-length`): expose the existing
+  `useTrainerSession.roundLength` option through persisted settings. PR #39 is
   open; local gates passed.
 
 ## Blocked / waiting

@@ -43,7 +43,7 @@ Reasons to come back tomorrow.
 - ✅ Mobile on-screen tap input (#27)
 - ✅ PWA (installable, offline) (#23)
 - ✅ Small daily goal (#32)
-- 💭 Configurable round length
+- ✅ Configurable round length (#33)
 
 ## Phase 3 — Depth 💭
 

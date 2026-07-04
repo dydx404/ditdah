@@ -15,9 +15,16 @@ import { createTrainer } from '@/core/trainer'
 import { createProgressStore } from '@/core/storage'
 import type { Progress, ProgressStore, Streak } from '@/core/storage/types'
 import { PracticeScreen } from '@/ui/PracticeScreen'
+import type { RoundSummary } from '@/ui/useTrainerSession'
 import { mergeSessionIntoProgress } from '@/app/progress'
 import { DEFAULT_TRAINER } from '@/app/config'
 import { loadSettings, saveSettings, type Settings } from '@/app/settings'
+import {
+  appendRound,
+  clearHistory,
+  loadHistory,
+  type RoundRecord,
+} from '@/app/history'
 
 function App() {
   const engineRef = useRef<ToneEngine | null>(null)
@@ -32,6 +39,9 @@ function App() {
   const [trainer, setTrainer] = useState<Trainer | null>(null)
   const [streakCount, setStreakCount] = useState(0)
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
+  const [history, setHistory] = useState<readonly RoundRecord[]>(() =>
+    loadHistory(),
+  )
   const initialSettingsRef = useRef(settings)
   const timing = useMemo(
     () => ({
@@ -94,6 +104,23 @@ function App() {
     saveSettings(next)
   }, [])
 
+  const handleRoundComplete = useCallback((summary: RoundSummary) => {
+    setHistory(
+      appendRound({
+        at: new Date().toISOString(),
+        total: summary.total,
+        correct: summary.correct,
+        accuracy: summary.accuracy,
+        effectiveWpm: summary.effectiveWpm,
+      }),
+    )
+  }, [])
+
+  const handleClearHistory = useCallback(() => {
+    clearHistory()
+    setHistory([])
+  }, [])
+
   if (!trainer) {
     return (
       <div className="grid h-full place-items-center">
@@ -110,7 +137,10 @@ function App() {
       settings={settings}
       onSettingsChange={handleSettingsChange}
       streak={streakCount}
+      history={history}
       onAnswered={handleAnswered}
+      onRoundComplete={handleRoundComplete}
+      onClearHistory={handleClearHistory}
     />
   )
 }

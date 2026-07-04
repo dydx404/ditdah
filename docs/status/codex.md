@@ -9,9 +9,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#23 — PWA installable + offline** (`feat/pwa`): add Vite PWA generation,
-  generated app icons from `public/icon.svg`, and auto-update service worker
-  registration. PR #26 is open; local gates passed.
+- **#28 — Session history** (`feat/session-history`): app-layer localStorage
+  round log plus history drawer, wired through the #27 `onRoundComplete` seam.
+  PR #29 is open; local gates passed.
 
 ## Blocked / waiting
 

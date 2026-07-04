@@ -21,6 +21,9 @@ import { AnswerKeypad } from './components/AnswerKeypad'
 import { UnlockToast } from './components/UnlockToast'
 import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
+import { HistoryPanel } from './HistoryPanel'
+import type { RoundRecord } from '@/app/history'
+import type { RoundSummary } from './useTrainerSession'
 
 interface PracticeScreenProps {
   trainer: Trainer
@@ -30,8 +33,13 @@ interface PracticeScreenProps {
   onSettingsChange: (settings: Settings) => void
   /** Current daily streak (consecutive days practiced). */
   streak?: number
+  /** Recent completed rounds, newest first. */
+  history?: readonly RoundRecord[]
   /** Called after each scored answer (the app persists progress). */
   onAnswered?: (result: AnswerResult) => void
+  /** Called once when a round finishes (the app persists history). */
+  onRoundComplete?: (summary: RoundSummary) => void
+  onClearHistory?: () => void
 }
 
 export function PracticeScreen({
@@ -41,11 +49,21 @@ export function PracticeScreen({
   settings,
   onSettingsChange,
   streak,
+  history = [],
   onAnswered,
+  onRoundComplete,
+  onClearHistory,
 }: PracticeScreenProps) {
-  const session = useTrainerSession({ trainer, engine, timing, onAnswered })
+  const session = useTrainerSession({
+    trainer,
+    engine,
+    timing,
+    onAnswered,
+    onRoundComplete,
+  })
   const { phase, start, replay, again } = session
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   // Space/Enter as controls. Space is not a valid answer key, so it's free to
   // mean "start" (idle), "replay" (listening), and "again" (summary) without
@@ -77,20 +95,36 @@ export function PracticeScreen({
         onSettingsChange={onSettingsChange}
         onClose={() => setSettingsOpen(false)}
       />
+      <HistoryPanel
+        open={historyOpen}
+        history={history}
+        onClose={() => setHistoryOpen(false)}
+        onClear={onClearHistory}
+      />
       <StatsBar
         unlocked={session.unlocked}
         summary={session.summary}
         effectiveWpm={timing.effectiveWpm}
         streak={streak}
         actions={
-          <button
-            type="button"
-            aria-label="Open settings"
-            onClick={() => setSettingsOpen(true)}
-            className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
-          >
-            ⚙
-          </button>
+          <>
+            <button
+              type="button"
+              aria-label="Open history"
+              onClick={() => setHistoryOpen(true)}
+              className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted transition hover:text-text"
+            >
+              <HistoryIcon />
+            </button>
+            <button
+              type="button"
+              aria-label="Open settings"
+              onClick={() => setSettingsOpen(true)}
+              className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
+            >
+              ⚙
+            </button>
+          </>
         }
       />
 
@@ -193,5 +227,25 @@ export function PracticeScreen({
         </div>
       </footer>
     </div>
+  )
+}
+
+function HistoryIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 6h16" />
+      <path d="M4 12h10" />
+      <path d="M4 18h6" />
+      <path d="M16 16l2 2 3-4" />
+    </svg>
   )
 }

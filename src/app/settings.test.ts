@@ -37,6 +37,7 @@ describe('settings persistence', () => {
       effectiveWpm: 18,
       toneHz: 720,
       volume: 0.45,
+      roundLength: 40,
       showPatterns: true,
     } satisfies Settings
 
@@ -53,6 +54,7 @@ describe('settings persistence', () => {
         effectiveWpm: 0,
         toneHz: 1200,
         volume: -1,
+        roundLength: 0,
       }),
     )
 
@@ -61,8 +63,17 @@ describe('settings persistence', () => {
       effectiveWpm: 5,
       toneHz: 1000,
       volume: 0,
+      roundLength: 5,
       showPatterns: false,
     })
+  })
+
+  it('defaults and clamps round length', () => {
+    expect(normalizeSettings({}).roundLength).toBe(25)
+    expect(normalizeSettings({ roundLength: Number.NaN }).roundLength).toBe(25)
+    expect(normalizeSettings({ roundLength: 0 }).roundLength).toBe(5)
+    expect(normalizeSettings({ roundLength: 106 }).roundLength).toBe(100)
+    expect(normalizeSettings({ roundLength: 27 }).roundLength).toBe(27)
   })
 
   it('defaults showPatterns off and coerces non-booleans to false', () => {
@@ -104,6 +115,12 @@ describe('SettingsPanel', () => {
     })
 
     expect(loadSettings().charWpm).toBe(30)
+
+    fireEvent.change(screen.getByLabelText('Round length'), {
+      target: { value: '50' },
+    })
+
+    expect(loadSettings().roundLength).toBe(50)
   })
 })
 

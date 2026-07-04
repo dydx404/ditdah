@@ -86,6 +86,15 @@ export function SettingsPanel({
             display={`${Math.round(settings.volume * 100)}%`}
             onChange={(volume) => update({ volume })}
           />
+          <SettingSlider
+            label="Round length"
+            value={settings.roundLength}
+            min={5}
+            max={100}
+            step={5}
+            display={`${settings.roundLength} prompts`}
+            onChange={(roundLength) => update({ roundLength })}
+          />
           <SettingToggle
             label="Show dit/dah patterns"
             hint="Off by default — learning by ear is the point. Turn on for a visual reference."

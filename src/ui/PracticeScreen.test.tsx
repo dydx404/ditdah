@@ -34,6 +34,7 @@ describe('PracticeScreen', () => {
         timing={timing}
         settings={DEFAULT_SETTINGS}
         onSettingsChange={() => {}}
+        roundLength={DEFAULT_SETTINGS.roundLength}
       />,
     )
 

@@ -12,6 +12,7 @@ const timing: TimingConfig = { charWpm: 20, effectiveWpm: 10, toneHz: 600 }
 const fakeEngine: ToneEngine = {
   resume: () => Promise.resolve(),
   play: () => ({ done: Promise.resolve(), stop: () => {} }),
+  cue: () => Promise.resolve(),
   stop: () => {},
   setVolume: () => {},
   dispose: () => {},

@@ -98,6 +98,7 @@ function fakeEngine() {
       calls.play.push({ elements, toneHz })
       return { done: Promise.resolve(), stop: () => {} }
     },
+    cue: () => Promise.resolve(),
     stop: () => {},
     setVolume: () => {},
     dispose: () => {},

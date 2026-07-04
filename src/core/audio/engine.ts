@@ -15,7 +15,7 @@
  * schedule.ts and is unit-tested; this file is the thin Web Audio glue.
  */
 import type { KeyingElement } from '../morse/types'
-import type { PlayHandle, ToneEngine } from './types'
+import type { CueNote, PlayHandle, ToneEngine } from './types'
 import { buildSchedule } from './schedule'
 
 /** Fade in/out per tone edge (seconds). ~5ms is inaudible but kills clicks. */
@@ -128,6 +128,47 @@ export class WebAudioToneEngine implements ToneEngine {
         if (this.active === playback) this.stop()
       },
     }
+  }
+
+  cue(notes: readonly CueNote[]): Promise<void> {
+    if (notes.length === 0) return Promise.resolve()
+    const { ctx, master } = this.ensureContext()
+
+    // Its own transient voice — a softer 'triangle' timbre so cues never read
+    // as sidetone. Runs independently of play()/this.active.
+    const osc = ctx.createOscillator()
+    osc.type = 'triangle'
+    const env = ctx.createGain()
+    env.gain.value = 0
+    osc.connect(env)
+    env.connect(master)
+
+    let t = ctx.currentTime + LOOKAHEAD_SEC
+    const start = t
+    for (const note of notes) {
+      const dur = note.ms / 1000
+      const ramp = Math.min(RAMP_SEC, dur / 2)
+      osc.frequency.setValueAtTime(note.hz, t)
+      env.gain.setValueAtTime(0, t)
+      env.gain.linearRampToValueAtTime(1, t + ramp)
+      env.gain.setValueAtTime(1, t + dur - ramp)
+      env.gain.linearRampToValueAtTime(0, t + dur)
+      t += dur
+    }
+    osc.start(start)
+    osc.stop(t + TAIL_SEC)
+
+    return new Promise<void>((resolve) => {
+      osc.onended = () => {
+        try {
+          osc.disconnect()
+          env.disconnect()
+        } catch {
+          // already disconnected
+        }
+        resolve()
+      }
+    })
   }
 
   stop(): void {

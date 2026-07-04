@@ -17,6 +17,7 @@ import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
 import { FeedbackReveal } from './components/FeedbackReveal'
 import { UnlockToast } from './components/UnlockToast'
+import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
 
 interface PracticeScreenProps {
@@ -137,18 +138,25 @@ export function PracticeScreen({
         </AnimatePresence>
       </main>
 
-      <footer className="flex items-center justify-center gap-4 px-6 py-4 font-mono text-xs text-muted/70">
-        {phase === 'listening' ? (
-          <button
-            type="button"
-            onClick={replay}
-            className="rounded border border-border px-3 py-1 text-muted transition hover:text-text"
-          >
-            replay (Space)
-          </button>
-        ) : (
-          <span>type the letter you hear</span>
-        )}
+      <footer className="flex flex-col">
+        <CharacterReference
+          unlocked={session.unlocked}
+          timing={timing}
+          engine={engine}
+        />
+        <div className="flex items-center justify-center gap-4 px-6 py-4 font-mono text-xs text-muted/70">
+          {phase === 'listening' ? (
+            <button
+              type="button"
+              onClick={replay}
+              className="rounded border border-border px-3 py-1 text-muted transition hover:text-text"
+            >
+              replay (Space)
+            </button>
+          ) : (
+            <span>type the letter you hear</span>
+          )}
+        </div>
       </footer>
     </div>
   )

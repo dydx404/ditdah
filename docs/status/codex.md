@@ -10,8 +10,7 @@ _Snapshot, not a diary. Keep it short and current._
 ## In flight
 
 - **#17 — Sound-first character reference** (`feat/character-reference`):
-  collapsible Koch-order reference with listen controls. No visual dot/dash
-  encodings.
+  PR #18 is open and green; awaiting Benson review/merge.
 
 ## Blocked / waiting
 
@@ -19,8 +18,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- Finish #17, run all four gates, open PR with `Closes #17`, then continue
-  Phase 2 one specced issue at a time.
+- After #17 merges, pull `main`, check open issues, then continue Phase 2 one
+  specced issue at a time.
 
 ## Open questions
 

@@ -9,12 +9,14 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { Settings } from '@/app/settings'
+import { normalizeSettings } from '@/app/settings'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
 import type { AnswerResult, Trainer } from '@/core/trainer/types'
 import { useTrainerSession } from './useTrainerSession'
 import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
+import { ModeSelect } from './components/ModeSelect'
 import { BufferSlots } from './components/BufferSlots'
 import { FeedbackReveal } from './components/FeedbackReveal'
 import { GroupFeedback } from './components/GroupFeedback'
@@ -146,28 +148,18 @@ export function PracticeScreen({
           {phase === 'idle' && (
             <motion.div
               key="idle"
-              className="flex flex-col items-center gap-6 text-center"
+              className="flex w-full flex-col items-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <h1 className="font-mono text-4xl font-bold tracking-tight">
-                dit<span className="text-accent">dah</span>
-              </h1>
-              <p className="max-w-xs text-muted">
-                Copy Morse by ear. You'll start with two characters and unlock
-                more as you go.
-              </p>
-              <button
-                type="button"
-                onClick={start}
-                className="rounded-lg bg-accent px-6 py-3 font-mono font-semibold text-bg transition hover:brightness-110"
-              >
-                Start listening
-              </button>
-              <p className="font-mono text-xs text-muted/70">
-                press Space · turn your sound on
-              </p>
+              <ModeSelect
+                settings={settings}
+                onSelectMode={(apply) =>
+                  onSettingsChange(normalizeSettings({ ...settings, ...apply }))
+                }
+                onStart={start}
+              />
             </motion.div>
           )}
 

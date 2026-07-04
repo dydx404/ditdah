@@ -9,8 +9,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#15 — Settings** (`feat/settings`): persisted WPM, sidetone, and volume.
-  PR #16 is open and green; awaiting Benson review/merge.
+- **#17 — Sound-first character reference** (`feat/character-reference`):
+  collapsible Koch-order reference with listen controls. No visual dot/dash
+  encodings.
 
 ## Blocked / waiting
 
@@ -18,8 +19,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #15 merges, pull `main`, check open issues, then move through Phase 2
-  one specced issue at a time.
+- Finish #17, run all four gates, open PR with `Closes #17`, then continue
+  Phase 2 one specced issue at a time.
 
 ## Open questions
 

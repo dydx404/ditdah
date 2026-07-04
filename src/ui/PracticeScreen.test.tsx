@@ -42,6 +42,9 @@ describe('PracticeScreen', () => {
     expect(
       screen.getByRole('button', { name: /open settings/i }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /character reference/i }),
+    ).toHaveAttribute('aria-expanded', 'false')
     // Sound-first: the prompt character is NOT rendered at idle, but the
     // learner's unlocked set (K, M) is shown in the HUD.
     expect(screen.getByText('K')).toBeInTheDocument()

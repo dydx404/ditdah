@@ -38,6 +38,8 @@ describe('settings persistence', () => {
       toneHz: 720,
       volume: 0.45,
       roundLength: 40,
+      promptMode: 'group',
+      groupSize: 4,
       strictGate: false,
       answerSounds: false,
       showPatterns: true,
@@ -66,6 +68,8 @@ describe('settings persistence', () => {
       toneHz: 1000,
       volume: 0,
       roundLength: 5,
+      promptMode: 'single',
+      groupSize: 5,
       strictGate: true,
       answerSounds: true,
       showPatterns: false,
@@ -78,6 +82,17 @@ describe('settings persistence', () => {
     expect(normalizeSettings({ roundLength: 0 }).roundLength).toBe(5)
     expect(normalizeSettings({ roundLength: 106 }).roundLength).toBe(100)
     expect(normalizeSettings({ roundLength: 27 }).roundLength).toBe(27)
+  })
+
+  it('defaults to single mode and clamps group size', () => {
+    expect(normalizeSettings({}).promptMode).toBe('single')
+    expect(normalizeSettings({ promptMode: 'bogus' as never }).promptMode).toBe(
+      'single',
+    )
+    expect(normalizeSettings({ promptMode: 'group' }).promptMode).toBe('group')
+    expect(normalizeSettings({ groupSize: 99 }).groupSize).toBe(7)
+    expect(normalizeSettings({ groupSize: 1 }).groupSize).toBe(2)
+    expect(normalizeSettings({}).groupSize).toBe(5)
   })
 
   it('defaults showPatterns off and coerces non-booleans to false', () => {

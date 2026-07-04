@@ -8,6 +8,13 @@ export interface Settings {
   readonly toneHz: number
   readonly volume: number
   readonly roundLength: number
+  /**
+   * `'single'` (default) plays one character per prompt. `'group'` plays a short
+   * run of characters to copy at once — the step up to copying text.
+   */
+  readonly promptMode: 'single' | 'group'
+  /** Characters per prompt in group mode (2–7). */
+  readonly groupSize: number
   /** Keep a missed prompt gated until the learner echoes it correctly. */
   readonly strictGate: boolean
   /** Play short correct/wrong UI answer cues. */
@@ -24,6 +31,8 @@ export const DEFAULT_SETTINGS: Settings = {
   ...DEFAULT_TIMING,
   volume: 0.7,
   roundLength: 25,
+  promptMode: 'single',
+  groupSize: 5,
   strictGate: true,
   answerSounds: true,
   showPatterns: false,
@@ -94,6 +103,12 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
       numberOrDefault(value.roundLength, DEFAULT_SETTINGS.roundLength),
       5,
       100,
+    ),
+    promptMode: value.promptMode === 'group' ? 'group' : 'single',
+    groupSize: clampInteger(
+      numberOrDefault(value.groupSize, DEFAULT_SETTINGS.groupSize),
+      2,
+      7,
     ),
     strictGate: value.strictGate !== false,
     answerSounds: value.answerSounds !== false,

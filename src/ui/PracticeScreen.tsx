@@ -15,7 +15,9 @@ import type { AnswerResult, Trainer } from '@/core/trainer/types'
 import { useTrainerSession } from './useTrainerSession'
 import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
+import { BufferSlots } from './components/BufferSlots'
 import { FeedbackReveal } from './components/FeedbackReveal'
+import { GroupFeedback } from './components/GroupFeedback'
 import { SummaryScreen } from './components/SummaryScreen'
 import { AnswerKeypad } from './components/AnswerKeypad'
 import { UnlockToast } from './components/UnlockToast'
@@ -71,6 +73,7 @@ export function PracticeScreen({
     onRoundComplete,
   })
   const { phase, start, replay, again } = session
+  const isGroup = session.promptLength > 1
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
 
@@ -171,11 +174,21 @@ export function PracticeScreen({
           {phase === 'listening' && (
             <motion.div
               key="listening"
+              className="flex flex-col items-center gap-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ListeningIndicator />
+              {isGroup ? (
+                <>
+                  <BufferSlots length={session.promptLength} value={session.buffer} />
+                  <p className="font-mono text-xs text-muted/70">
+                    copy the group · Enter to submit
+                  </p>
+                </>
+              ) : (
+                <ListeningIndicator />
+              )}
             </motion.div>
           )}
 
@@ -186,7 +199,11 @@ export function PracticeScreen({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <FeedbackReveal result={session.lastResult} />
+              {session.lastResult.perChar ? (
+                <GroupFeedback result={session.lastResult} />
+              ) : (
+                <FeedbackReveal result={session.lastResult} />
+              )}
             </motion.div>
           )}
 
@@ -225,12 +242,39 @@ export function PracticeScreen({
 
       <footer className="flex flex-col">
         {(phase === 'listening' || phase === 'feedback' || phase === 'retry') && (
-          <div className="px-5 pb-3">
+          <div className="flex flex-col items-center gap-2 px-5 pb-3">
             <AnswerKeypad
               chars={session.unlocked}
-              onAnswer={phase === 'retry' ? session.retryAnswer : session.answer}
+              onAnswer={
+                isGroup
+                  ? session.typeChar
+                  : phase === 'retry'
+                    ? session.retryAnswer
+                    : session.answer
+              }
               disabled={phase === 'feedback'}
             />
+            {isGroup && phase === 'listening' && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Delete last character"
+                  onClick={session.backspace}
+                  disabled={session.buffer.length === 0}
+                  className="h-10 rounded-lg border border-border px-4 font-mono text-sm text-muted transition hover:text-text disabled:opacity-40"
+                >
+                  ⌫
+                </button>
+                <button
+                  type="button"
+                  onClick={session.submitGroup}
+                  disabled={session.buffer.length === 0}
+                  className="h-10 rounded-lg bg-accent px-5 font-mono text-sm font-semibold text-bg transition hover:brightness-110 disabled:opacity-40"
+                >
+                  Submit
+                </button>
+              </div>
+            )}
           </div>
         )}
         <CharacterReference

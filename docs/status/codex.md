@@ -9,18 +9,18 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#34 — Strict mode + answer-sounds toggles**
-  (`feat/strict-sound-settings`): add default-on settings for the retry gate and
-  answer cue voice. Touches `useTrainerSession`; keep branch logic surgical.
+- _(none noted)_
 
 ## Blocked / waiting
 
-- _(none noted)_
+- **#21 — Scope account and cloud sync v0** is open as `needs-spec`; wait for
+  Benson's product/back-end decision before implementing accounts.
+- No open ready issues remain. For Phase 3 work, open a short specced issue and
+  wait for Benson's thumbs-up before coding.
 
 ## Next
 
-- **#21 — Scope account and cloud sync v0** is open as `needs-spec`; wait for
-  Benson's product/back-end decision before implementing accounts.
+- Shape the next retention/depth issue once Benson confirms priority.
 
 ## Open questions
 
@@ -28,6 +28,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- #34 merged as PR #40; local gates, PR CI, main CI, and Pages deploy were green.
 - #33 merged as PR #39; main CI + Pages deploy were green after merge.
 - Frozen contracts are all implemented; never edit any `core/*/types.ts`.
 - Env: `conda activate nodejs` before npm. Gates: `typecheck && test && lint && build`.

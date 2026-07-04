@@ -1,5 +1,6 @@
 import type { Settings } from '@/app/settings'
 import { normalizeSettings } from '@/app/settings'
+import { LOCALES, useT } from '@/i18n'
 
 interface SettingsPanelProps {
   open: boolean
@@ -14,6 +15,7 @@ export function SettingsPanel({
   onSettingsChange,
   onClose,
 }: SettingsPanelProps) {
+  const t = useT()
   if (!open) {
     return null
   }
@@ -36,12 +38,14 @@ export function SettingsPanel({
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h2 className="font-mono text-lg font-semibold text-text">Settings</h2>
-            <p className="mt-1 text-sm text-muted">Tune the sound, keep the rhythm.</p>
+            <h2 className="font-mono text-lg font-semibold text-text">
+              {t('settings.title')}
+            </h2>
+            <p className="mt-1 text-sm text-muted">{t('settings.subtitle')}</p>
           </div>
           <button
             type="button"
-            aria-label="Close settings"
+            aria-label={t('action.close')}
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
           >
@@ -50,35 +54,58 @@ export function SettingsPanel({
         </div>
 
         <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-sm text-muted">
+              {t('settings.language')}
+            </span>
+            <div className="flex gap-2" role="group" aria-label={t('settings.language')}>
+              {LOCALES.map((loc) => (
+                <button
+                  key={loc.id}
+                  type="button"
+                  aria-pressed={settings.locale === loc.id}
+                  onClick={() => update({ locale: loc.id })}
+                  className={[
+                    'rounded-md border px-3 py-1.5 font-mono text-sm transition',
+                    settings.locale === loc.id
+                      ? 'border-accent bg-accent/10 text-text'
+                      : 'border-border text-muted hover:text-text',
+                  ].join(' ')}
+                >
+                  {loc.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <SettingSlider
-            label="Character speed"
+            label={t('settings.charSpeed')}
             value={settings.charWpm}
             min={10}
             max={40}
             step={1}
-            display={`${settings.charWpm} WPM`}
+            display={`${settings.charWpm} ${t('unit.wpm')}`}
             onChange={(charWpm) => update({ charWpm })}
           />
           <SettingSlider
-            label="Overall speed"
+            label={t('settings.overallSpeed')}
             value={settings.effectiveWpm}
             min={5}
             max={settings.charWpm}
             step={1}
-            display={`${settings.effectiveWpm} WPM`}
+            display={`${settings.effectiveWpm} ${t('unit.wpm')}`}
             onChange={(effectiveWpm) => update({ effectiveWpm })}
           />
           <SettingSlider
-            label="Sidetone"
+            label={t('settings.sidetone')}
             value={settings.toneHz}
             min={400}
             max={1000}
             step={10}
-            display={`${settings.toneHz} Hz`}
+            display={`${settings.toneHz} ${t('unit.hz')}`}
             onChange={(toneHz) => update({ toneHz })}
           />
           <SettingSlider
-            label="Volume"
+            label={t('settings.volume')}
             value={settings.volume}
             min={0}
             max={1}
@@ -87,40 +114,40 @@ export function SettingsPanel({
             onChange={(volume) => update({ volume })}
           />
           <SettingSlider
-            label="Round length"
+            label={t('settings.roundLength')}
             value={settings.roundLength}
             min={5}
             max={100}
             step={5}
-            display={`${settings.roundLength} prompts`}
+            display={`${settings.roundLength} ${t('unit.prompts')}`}
             onChange={(roundLength) => update({ roundLength })}
           />
           {settings.promptMode === 'group' && (
             <SettingSlider
-              label="Group size"
+              label={t('settings.groupSize')}
               value={settings.groupSize}
               min={2}
               max={7}
               step={1}
-              display={`${settings.groupSize} chars`}
+              display={`${settings.groupSize} ${t('unit.chars')}`}
               onChange={(groupSize) => update({ groupSize })}
             />
           )}
           <SettingToggle
-            label="Strict mode (type misses back to continue)"
-            hint="On by default: missed characters must be echoed once before moving on."
+            label={t('settings.strict')}
+            hint={t('settings.strictHint')}
             checked={settings.strictGate}
             onChange={(strictGate) => update({ strictGate })}
           />
           <SettingToggle
-            label="Answer sounds"
-            hint="Play short correct and wrong cues after each answer."
+            label={t('settings.sounds')}
+            hint={t('settings.soundsHint')}
             checked={settings.answerSounds}
             onChange={(answerSounds) => update({ answerSounds })}
           />
           <SettingToggle
-            label="Show dit/dah patterns"
-            hint="Off by default — learning by ear is the point. Turn on for a visual reference."
+            label={t('settings.patterns')}
+            hint={t('settings.patternsHint')}
             checked={settings.showPatterns}
             onChange={(showPatterns) => update({ showPatterns })}
           />

@@ -15,6 +15,7 @@ import { createTrainer } from '@/core/trainer'
 import { createProgressStore } from '@/core/storage'
 import type { Progress, ProgressStore, Streak } from '@/core/storage/types'
 import { PracticeScreen } from '@/ui/PracticeScreen'
+import { I18nProvider } from '@/i18n'
 import type { RoundSummary } from '@/ui/useTrainerSession'
 import { mergeSessionIntoProgress } from '@/app/progress'
 import { DEFAULT_TRAINER } from '@/app/config'
@@ -162,21 +163,23 @@ function App() {
   }
 
   return (
-    <PracticeScreen
-      trainer={trainer}
-      engine={engineRef.current}
-      timing={timing}
-      settings={settings}
-      onSettingsChange={handleSettingsChange}
-      roundLength={settings.roundLength}
-      gateOnMiss={settings.strictGate}
-      answerSounds={settings.answerSounds}
-      streak={streakCount}
-      history={history}
-      onAnswered={handleAnswered}
-      onRoundComplete={handleRoundComplete}
-      onClearHistory={handleClearHistory}
-    />
+    <I18nProvider locale={settings.locale}>
+      <PracticeScreen
+        trainer={trainer}
+        engine={engineRef.current}
+        timing={timing}
+        settings={settings}
+        onSettingsChange={handleSettingsChange}
+        roundLength={settings.roundLength}
+        gateOnMiss={settings.strictGate}
+        answerSounds={settings.answerSounds}
+        streak={streakCount}
+        history={history}
+        onAnswered={handleAnswered}
+        onRoundComplete={handleRoundComplete}
+        onClearHistory={handleClearHistory}
+      />
+    </I18nProvider>
   )
 }
 

@@ -1,4 +1,5 @@
 import { DEFAULT_TIMING } from './config'
+import { detectLocale, isLocale, type Locale } from '@/i18n/messages'
 
 const SETTINGS_KEY = 'ditdah:settings'
 
@@ -8,6 +9,8 @@ export interface Settings {
   readonly toneHz: number
   readonly volume: number
   readonly roundLength: number
+  /** UI language. */
+  readonly locale: Locale
   /**
    * `'single'` (default) plays one character per prompt. `'group'` plays a short
    * run of characters to copy at once — the step up to copying text.
@@ -31,6 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ...DEFAULT_TIMING,
   volume: 0.7,
   roundLength: 25,
+  locale: 'en',
   promptMode: 'single',
   groupSize: 5,
   strictGate: true,
@@ -47,7 +51,8 @@ export function loadSettings(): Settings {
 
     const raw = storage.getItem(SETTINGS_KEY)
     if (raw === null) {
-      return DEFAULT_SETTINGS
+      // First run: seed the UI language from the browser.
+      return { ...DEFAULT_SETTINGS, locale: detectLocale() }
     }
 
     const parsed: unknown = JSON.parse(raw)
@@ -104,6 +109,7 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
       5,
       100,
     ),
+    locale: isLocale(value.locale) ? value.locale : DEFAULT_SETTINGS.locale,
     promptMode: value.promptMode === 'group' ? 'group' : 'single',
     groupSize: clampInteger(
       numberOrDefault(value.groupSize, DEFAULT_SETTINGS.groupSize),

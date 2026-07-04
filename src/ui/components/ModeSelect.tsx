@@ -7,6 +7,7 @@
  */
 import type { Settings } from '@/app/settings'
 import { PRACTICE_MODES, activeModeId } from '@/app/modes'
+import { useT } from '@/i18n'
 
 interface ModeSelectProps {
   settings: Settings
@@ -15,6 +16,7 @@ interface ModeSelectProps {
 }
 
 export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps) {
+  const t = useT()
   const active = activeModeId(settings)
 
   return (
@@ -22,10 +24,7 @@ export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps)
       <h1 className="font-mono text-4xl font-bold tracking-tight">
         dit<span className="text-accent">dah</span>
       </h1>
-      <p className="max-w-xs text-muted">
-        Pick a mode, then copy Morse by ear. You start with two characters and
-        unlock more as you go.
-      </p>
+      <p className="max-w-xs text-muted">{t('mode.intro')}</p>
 
       <div className="grid w-full grid-cols-2 gap-3" role="group" aria-label="Practice modes">
         {PRACTICE_MODES.map((mode) => {
@@ -48,16 +47,16 @@ export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps)
             >
               <span className="flex w-full items-center justify-between gap-2">
                 <span className="font-mono text-sm font-semibold text-text">
-                  {mode.name}
+                  {t(mode.nameKey)}
                 </span>
                 {isActive && <span className="text-accent" aria-hidden="true">●</span>}
                 {!mode.available && (
                   <span className="rounded-full border border-border px-1.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-wider text-muted">
-                    soon
+                    {t('action.soon')}
                   </span>
                 )}
               </span>
-              <span className="text-xs text-muted">{mode.blurb}</span>
+              <span className="text-xs text-muted">{t(mode.blurbKey)}</span>
             </button>
           )
         })}
@@ -68,11 +67,9 @@ export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps)
         onClick={onStart}
         className="rounded-lg bg-accent px-6 py-3 font-mono font-semibold text-bg transition hover:brightness-110"
       >
-        Start listening
+        {t('action.start')}
       </button>
-      <p className="font-mono text-xs text-muted/70">
-        press Space · turn your sound on
-      </p>
+      <p className="font-mono text-xs text-muted/70">{t('home.hint')}</p>
     </div>
   )
 }

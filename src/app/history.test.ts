@@ -5,6 +5,7 @@ import {
   appendRound,
   clearHistory,
   loadHistory,
+  roundsToday,
   type RoundRecord,
 } from './history'
 
@@ -95,8 +96,33 @@ describe('session history persistence', () => {
   })
 })
 
+describe('roundsToday', () => {
+  it('returns 0 for empty history', () => {
+    expect(roundsToday([], new Date(2026, 6, 4, 12).getTime())).toBe(0)
+  })
+
+  it('counts records on the same local calendar day as now', () => {
+    const now = new Date(2026, 6, 4, 0, 30).getTime()
+    const history = [
+      roundAt(new Date(2026, 6, 4, 0, 5)),
+      roundAt(new Date(2026, 6, 4, 23, 55)),
+      roundAt(new Date(2026, 6, 3, 23, 55)),
+      roundAt(new Date(2026, 6, 5, 0, 5)),
+    ]
+
+    expect(roundsToday(history, now)).toBe(2)
+  })
+})
+
 function storage(): Storage {
   return localStorage
+}
+
+function roundAt(at: Date): RoundRecord {
+  return {
+    ...record(1),
+    at: at.toISOString(),
+  }
 }
 
 class MemoryStorage implements Storage {

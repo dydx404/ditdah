@@ -42,7 +42,7 @@ Reasons to come back tomorrow.
 - ✅ Settings: character/effective WPM, sidetone frequency, volume (#15, #16)
 - ✅ Mobile on-screen tap input (#27)
 - ✅ PWA (installable, offline) (#23)
-- ⏳ Small daily goal
+- ✅ Small daily goal (#32)
 - 💭 Configurable round length
 
 ## Phase 3 — Depth 💭

@@ -22,7 +22,7 @@ import { UnlockToast } from './components/UnlockToast'
 import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
 import { HistoryPanel } from './HistoryPanel'
-import type { RoundRecord } from '@/app/history'
+import { roundsToday, type RoundRecord } from '@/app/history'
 import type { RoundSummary } from './useTrainerSession'
 
 interface PracticeScreenProps {
@@ -106,6 +106,7 @@ export function PracticeScreen({
         summary={session.summary}
         effectiveWpm={timing.effectiveWpm}
         streak={streak}
+        roundsToday={roundsToday(history)}
         actions={
           <>
             <button

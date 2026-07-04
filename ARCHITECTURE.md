@@ -30,13 +30,20 @@ The core is framework-agnostic and pure; the UI is a thin, replaceable shell.
 Dependencies point downward only — `core/*` never imports from `ui/`.
 
 ```
-ui/            React components. Dumb, driven by core. The only throwaway layer.
+App.tsx        Composition root: creates engine + trainer + stores, loads saved
+               state, and wires callbacks. The only place that knows about all
+               the pieces at once.
+  ↓
+app/           Browser-bound glue (not pure core): settings, progress-merge +
+               streak, session history. localStorage-backed, best-effort.
+ui/            React components + the useTrainerSession loop machine. Driven by
+               core + app; holds the "game feel," no domain rules.
   ↓ imports
 core/
   trainer/     Session logic: Koch progression, prompts, scoring. Pure.
   morse/       Character table, Koch order, timing math. Pure.
   audio/       Web Audio scheduler / sidetone engine. The load-bearing wall.
-  storage/     Local-first persistence (IndexedDB). Versioned schema.
+  storage/     Local-first persistence. Async, versioned schema.
 ```
 
 - **`core/morse`** — pure functions and data. Text + `TimingConfig` →
@@ -45,11 +52,18 @@ core/
   on the Web Audio clock (`AudioContext.currentTime`), with click-free ramps.
   **Never** `setTimeout` for timing: dits are ~60ms and rhythm _is_ the skill.
 - **`core/trainer`** — deterministic session state given a seeded RNG. Produces
-  prompts, scores answers, tracks per-character accuracy, decides unlocks.
-- **`core/storage`** — persistence behind an interface so an optional cloud sync
-  can back it later without touching callers. v0 is 100% local.
-- **`ui/`** — renders state and forwards input. Holds the "game feel," holds no
-  domain logic.
+  prompts, scores answers, tracks per-character accuracy, decides unlocks. It's
+  a per-answer scorer; round/session structure lives in the UI, not here.
+- **`core/storage`** — progress persistence behind an async interface so an
+  optional cloud sync can back it later without touching callers. v0 is 100%
+  local (localStorage).
+- **`app/`** — the browser glue that isn't pure enough for `core/` but isn't a
+  component: `settings`, `progress` (base+session merge & streak day-logic),
+  `history` (rolling round log). Each is small, localStorage-backed, tested.
+- **`ui/`** — components plus `useTrainerSession`, the loop state machine
+  (`idle → listening → feedback → … → summary`). A round is N prompts; the hook
+  accumulates round stats and exposes `onRoundComplete` for history. Renders
+  state and forwards input (keyboard + on-screen keypad); holds no domain rules.
 
 Why this split: the `core/*` layers are pure, unit-testable, and outlive the UI.
 They're also cleanly separable, which is what lets multiple contributors (and

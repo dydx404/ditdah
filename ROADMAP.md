@@ -16,7 +16,7 @@ Scaffold, toolchain, and the parallel-agent workflow.
 - ✅ `core/audio` — Web Audio sidetone engine + pure scheduler (#3)
 - ✅ Frozen contracts; `AGENTS.md` working agreement; worktree isolation (#4)
 
-## Phase 1 — The receiving loop (MVP) 🚧
+## Phase 1 — The receiving loop (MVP) ✅
 
 The entire v0 product: hear a character → type it → instant feedback. Koch +
 Farnsworth, sound-first. **Goal: a loop Benson opens every day.**
@@ -25,22 +25,25 @@ Farnsworth, sound-first. **Goal: a loop Benson opens every day.**
 - ✅ Practice loop UI — `PracticeScreen` + state machine (#7)
 - ✅ Swap dev stub → real `core/trainer`; delete `ui/dev` (#9)
 - ✅ Sound-first collapsible character reference (#17, #22)
-- ⏳ **Browser audio verification** — clean tone, click-free, musical timing
+- ✅ **Browser audio verification** — clean tone, musical timing (Benson ✓)
 - ✅ `core/storage` + progress persistence (localStorage v0) (#10, #11, #14)
 - ✅ Deploy (GitHub Pages) so it's reachable on any device (#12)
 
-**Exit criteria:** Benson uses it daily for a week; a true beginner can unlock
-several characters unaided.
+**Exit criteria (in progress):** Benson uses it daily for a week; a true
+beginner can unlock several characters unaided.
 
-## Phase 2 — Retention ⏳
+## Phase 2 — Retention 🚧
 
 Reasons to come back tomorrow.
 
-- ✅ Daily streak day-logic (#19, #20)
-- ⏳ Small daily goal
-- ✅ Session summary + history (accuracy, effective WPM over time) (#27, #28)
+- ✅ Daily streak — day-logic (#19, #20) + HUD (#24)
+- ✅ Round-based sessions + end-of-round summary (#25)
+- ✅ Session history (accuracy / WPM over time) (#28, #29)
 - ✅ Settings: character/effective WPM, sidetone frequency, volume (#15, #16)
+- ✅ Mobile on-screen tap input (#27)
 - ✅ PWA (installable, offline) (#23)
+- ⏳ Small daily goal
+- 💭 Configurable round length
 
 ## Phase 3 — Depth 💭
 

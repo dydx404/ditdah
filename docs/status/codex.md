@@ -9,8 +9,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **UI localization extraction** (`feat/i18n-extract`): finish moving remaining
-  component-visible strings and aria labels into `src/i18n/en.ts` + `zh.ts`.
+- _(none noted)_
 
 ## Blocked / waiting
 
@@ -29,8 +28,11 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
-- PR #46 added the i18n system; this branch should only consume it, not alter
-  the mechanism.
+- UI localization extraction merged as PR #47; local gates, PR CI, main CI, and
+  Pages deploy were green. The first Pages deploy attempt hit GitHub's
+  transient "try again later" failure and passed on rerun.
+- PR #46 added the i18n system; future extraction work should consume it, not
+  alter the mechanism.
 - #34 merged as PR #40; local gates, PR CI, main CI, and Pages deploy were green.
 - #33 merged as PR #39; main CI + Pages deploy were green after merge.
 - Frozen contracts are all implemented; never edit any `core/*/types.ts`.

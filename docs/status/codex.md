@@ -21,8 +21,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 - PR #18 (sound-first character reference) is open and green from the previous
   branch; this streak branch is intentionally based on `main`.
-- Account/cloud sync needs a scoped issue before implementation; roadmap still
-  says accounts/back-end are deferred until retention earns them.
+- **#21 — Scope account and cloud sync v0** is open as `needs-spec`; wait for
+  Benson's product/back-end decision before implementing accounts.
 
 ## Open questions
 

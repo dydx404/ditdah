@@ -19,8 +19,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- PR #18 (sound-first character reference) is open and green from the previous
-  branch; this streak branch is intentionally based on `main`.
+- PR #18 (sound-first character reference) has merged to `main`.
 - **#21 — Scope account and cloud sync v0** is open as `needs-spec`; wait for
   Benson's product/back-end decision before implementing accounts.
 

@@ -21,12 +21,13 @@ Scaffold, toolchain, and the parallel-agent workflow.
 The entire v0 product: hear a character → type it → instant feedback. Koch +
 Farnsworth, sound-first. **Goal: a loop Benson opens every day.**
 
-- 🚧 `core/trainer` — Koch progression, prompts, scoring, unlocks (#5)
-- 🚧 Practice loop UI — `PracticeScreen` + state machine (#7, on a dev stub)
-- ⏳ Swap dev stub → real `core/trainer`; delete `ui/dev` (after #5)
+- ✅ `core/trainer` — Koch progression, prompts, scoring, unlocks (#5)
+- ✅ Practice loop UI — `PracticeScreen` + state machine (#7)
+- ✅ Swap dev stub → real `core/trainer`; delete `ui/dev` (#9)
+- 🚧 Sound-first collapsible character reference (#17)
 - ⏳ **Browser audio verification** — clean tone, click-free, musical timing
-- ⏳ `core/storage` — persist progress locally (IndexedDB); freeze its contract
-- ⏳ Deploy (GitHub/Cloudflare Pages) so it's reachable on any device
+- ✅ `core/storage` + progress persistence (localStorage v0) (#10, #11, #14)
+- ✅ Deploy (GitHub Pages) so it's reachable on any device (#12)
 
 **Exit criteria:** Benson uses it daily for a week; a true beginner can unlock
 several characters unaided.
@@ -37,7 +38,7 @@ Reasons to come back tomorrow.
 
 - ⏳ Daily streak + a small daily goal
 - ⏳ Session summary + history (accuracy, effective WPM over time)
-- ⏳ Settings: character/effective WPM, sidetone frequency, volume
+- ✅ Settings: character/effective WPM, sidetone frequency, volume (#15, #16)
 - ⏳ PWA (installable, offline)
 
 ## Phase 3 — Depth 💭

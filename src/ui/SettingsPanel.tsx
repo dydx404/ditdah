@@ -95,12 +95,6 @@ export function SettingsPanel({
             display={`${settings.roundLength} prompts`}
             onChange={(roundLength) => update({ roundLength })}
           />
-          <SettingToggle
-            label="Group mode (copy runs of characters)"
-            hint="Off by default. On plays a short group to copy at once — the step up from single letters to text."
-            checked={settings.promptMode === 'group'}
-            onChange={(on) => update({ promptMode: on ? 'group' : 'single' })}
-          />
           {settings.promptMode === 'group' && (
             <SettingSlider
               label="Group size"

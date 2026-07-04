@@ -17,6 +17,7 @@ import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
 import { FeedbackReveal } from './components/FeedbackReveal'
 import { SummaryScreen } from './components/SummaryScreen'
+import { AnswerKeypad } from './components/AnswerKeypad'
 import { UnlockToast } from './components/UnlockToast'
 import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
@@ -163,6 +164,15 @@ export function PracticeScreen({
       </main>
 
       <footer className="flex flex-col">
+        {(phase === 'listening' || phase === 'feedback') && (
+          <div className="px-5 pb-3">
+            <AnswerKeypad
+              chars={session.unlocked}
+              onAnswer={session.answer}
+              disabled={phase !== 'listening'}
+            />
+          </div>
+        )}
         <CharacterReference
           unlocked={session.unlocked}
           timing={timing}

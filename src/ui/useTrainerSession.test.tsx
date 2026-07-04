@@ -165,4 +165,43 @@ describe('useTrainerSession', () => {
     expect(view.result.current.phase).toBe('listening')
     expect(view.result.current.roundSummary).toBeNull()
   })
+
+  it('answer() scores like a keypress (tap input path)', async () => {
+    const { view } = setup()
+    await act(async () => view.result.current.start())
+
+    act(() => view.result.current.answer('K'))
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.summary.total).toBe(1)
+  })
+
+  it('fires onRoundComplete once with the round summary', async () => {
+    const { engine } = makeFakeEngine()
+    const trainer = createTrainer({
+      timing,
+      initialUnlockCount: 2,
+      unlockAccuracy: 0.9,
+      unlockWindow: 5,
+      seed: 1,
+    })
+    const onRoundComplete = vi.fn()
+    const view = renderHook(() =>
+      useTrainerSession({
+        trainer,
+        engine,
+        timing,
+        roundLength: 1,
+        correctHoldMs: 100,
+        wrongHoldMs: 100,
+        onRoundComplete,
+      }),
+    )
+
+    await act(async () => view.result.current.start())
+    act(() => view.result.current.answer('K'))
+    act(() => vi.advanceTimersByTime(120))
+
+    expect(onRoundComplete).toHaveBeenCalledOnce()
+    expect(onRoundComplete.mock.calls[0][0]).toMatchObject({ total: 1 })
+  })
 })

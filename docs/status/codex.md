@@ -11,6 +11,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 - **#28 — Session history** (`feat/session-history`): app-layer localStorage
   round log plus history drawer, wired through the #27 `onRoundComplete` seam.
+  PR #29 is open; local gates passed.
 
 ## Blocked / waiting
 

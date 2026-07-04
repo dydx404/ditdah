@@ -1,12 +1,12 @@
 /**
  * UI answer cues — short, non-Morse audio feedback on submit.
  *
- * Two-note shapes, played through the engine's `cue()` voice (a softer triangle
- * timbre, pitched away from the sidetone) so the ear never confuses a cue with a
- * character:
+ * Two-note shapes, played through the engine's `cue()` voice — a warm plucked
+ * mallet/bell tone (fast attack, natural decay) pitched away from the sidetone,
+ * so cues sound instrument-y (Duolingo-ish) rather than like a beep:
  *
  *   correct → a bright descending "ding-dong" (a bell/doorbell reward)
- *   wrong   → a low descending "uh-oh" buzz
+ *   wrong   → a low descending "uh-oh"
  */
 import type { CueNote, ToneEngine } from '@/core/audio/types'
 

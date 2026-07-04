@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ditdah app icon</title>
+  <desc id="desc">An abstract sound-first mark on a dark background.</desc>
+  <rect width="512" height="512" rx="112" fill="#0b0d10" />
+  <path
+    d="M136 286c40 52 80 78 120 78s80-26 120-78"
+    fill="none"
+    stroke="#4ade80"
+    stroke-width="34"
+    stroke-linecap="round"
+  />
+  <path
+    d="M168 226c30 35 59 52 88 52s58-17 88-52"
+    fill="none"
+    stroke="#f8fafc"
+    stroke-width="28"
+    stroke-linecap="round"
+    opacity=".92"
+  />
+  <path
+    d="M208 170c16 17 32 25 48 25s32-8 48-25"
+    fill="none"
+    stroke="#4ade80"
+    stroke-width="24"
+    stroke-linecap="round"
+  />
+</svg>

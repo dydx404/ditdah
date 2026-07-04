@@ -24,7 +24,7 @@ Farnsworth, sound-first. **Goal: a loop Benson opens every day.**
 - ✅ `core/trainer` — Koch progression, prompts, scoring, unlocks (#5)
 - ✅ Practice loop UI — `PracticeScreen` + state machine (#7)
 - ✅ Swap dev stub → real `core/trainer`; delete `ui/dev` (#9)
-- 🚧 Sound-first collapsible character reference (#17)
+- ✅ Sound-first collapsible character reference (#17, #22)
 - ⏳ **Browser audio verification** — clean tone, click-free, musical timing
 - ✅ `core/storage` + progress persistence (localStorage v0) (#10, #11, #14)
 - ✅ Deploy (GitHub Pages) so it's reachable on any device (#12)
@@ -36,10 +36,11 @@ several characters unaided.
 
 Reasons to come back tomorrow.
 
-- ⏳ Daily streak + a small daily goal
+- ✅ Daily streak day-logic (#19, #20)
+- ⏳ Small daily goal
 - ⏳ Session summary + history (accuracy, effective WPM over time)
 - ✅ Settings: character/effective WPM, sidetone frequency, volume (#15, #16)
-- ⏳ PWA (installable, offline)
+- ✅ PWA (installable, offline) (#23)
 
 ## Phase 3 — Depth 💭
 

@@ -16,8 +16,9 @@ hear a character, type what you heard, get instant feedback — using the Koch
 method with Farnsworth timing. Everything runs in the browser, local-first, no
 account required.
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the design and [docs/AGENTS.md](./docs/AGENTS.md)
-for how contributors (human and AI) work in this repo.
+See [ROADMAP.md](./ROADMAP.md) for the plan, [ARCHITECTURE.md](./ARCHITECTURE.md)
+for the design, and [docs/AGENTS.md](./docs/AGENTS.md) for how contributors
+(human and AI) work in this repo.
 
 ## Product principles
 

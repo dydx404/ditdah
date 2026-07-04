@@ -69,6 +69,26 @@ git checkout -b <type>/<feature>     # your branch for this issue
 
 Never run `git checkout <branch>` in a directory another agent is using.
 
+## Shared knowledge & working memory
+
+So an agent can resume cold (out of tokens/context, or a fresh instance),
+resumable state lives on disk — split by **write-ownership**, because two agents
+writing one file collide just like two agents in one checkout.
+
+- **Shared knowledge** (read by all, one deliberate writer, changed via PR):
+  `ARCHITECTURE.md` + `AGENTS.md` + `core/*/types.ts` (Claude), and `ROADMAP.md`
+  (Claude, the plan).
+- **Live work queue + task assignment:** GitHub issues + labels — the source of
+  truth for "what's next", not any status file.
+- **Working memory** (strict single-writer): `docs/status/<agent>.md`. Claude
+  writes only `claude.md`; Codex writes only `codex.md`. **Never** edit the other
+  agent's file, and there is **no shared status file**.
+
+Cold-start ritual: read `AGENTS.md` → `ROADMAP.md` → your own
+`docs/status/<you>.md` → `git log` + open PRs/issues, then continue. Keep your
+status file short and current, and commit it alongside your work. Full protocol:
+[`docs/status/README.md`](status/README.md).
+
 ## Coding conventions
 
 - **TypeScript, strict.** No `any`. `noUnusedLocals`/`noUnusedParameters` are on.

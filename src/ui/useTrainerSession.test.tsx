@@ -20,6 +20,7 @@ function makeFakeEngine() {
       calls.play += 1
       return { done: Promise.resolve(), stop: () => {} }
     },
+    cue: () => Promise.resolve(),
     stop: () => {
       calls.stop += 1
     },

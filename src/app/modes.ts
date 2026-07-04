@@ -7,11 +7,13 @@
  * as they land, so the home screen grows without new plumbing.
  */
 import type { Settings } from './settings'
+import type { MessageKey } from '@/i18n'
 
 export interface PracticeModeDef {
   readonly id: string
-  readonly name: string
-  readonly blurb: string
+  /** i18n keys, resolved at render so mode names/blurbs localize. */
+  readonly nameKey: MessageKey
+  readonly blurbKey: MessageKey
   /** False for planned-but-not-built modes (shown greyed as "soon"). */
   readonly available: boolean
   /** Settings applied when this mode is selected. */
@@ -21,34 +23,34 @@ export interface PracticeModeDef {
 export const PRACTICE_MODES: readonly PracticeModeDef[] = [
   {
     id: 'learn',
-    name: 'Learn',
-    blurb: 'Letters by ear, one at a time — the Koch path.',
+    nameKey: 'mode.learn.name',
+    blurbKey: 'mode.learn.blurb',
     available: true,
     apply: { promptMode: 'single' },
   },
   {
     id: 'groups',
-    name: 'Copy groups',
-    blurb: 'Random runs from your unlocked set.',
+    nameKey: 'mode.groups.name',
+    blurbKey: 'mode.groups.blurb',
     available: true,
     apply: { promptMode: 'group' },
   },
   {
     id: 'words',
-    name: 'Words',
-    blurb: 'Copy real words.',
+    nameKey: 'mode.words.name',
+    blurbKey: 'mode.words.blurb',
     available: false,
   },
   {
     id: 'callsigns',
-    name: 'Callsigns',
-    blurb: 'Realistic callsign patterns.',
+    nameKey: 'mode.callsigns.name',
+    blurbKey: 'mode.callsigns.blurb',
     available: false,
   },
   {
     id: 'numbers',
-    name: 'Numbers',
-    blurb: 'Digit drills.',
+    nameKey: 'mode.numbers.name',
+    blurbKey: 'mode.numbers.blurb',
     available: false,
   },
 ]

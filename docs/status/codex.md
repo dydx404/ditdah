@@ -10,7 +10,8 @@ _Snapshot, not a diary. Keep it short and current._
 ## In flight
 
 - **#33 — Configurable round length** (`feat/round-length`): expose the existing
-  `useTrainerSession.roundLength` option through persisted settings.
+  `useTrainerSession.roundLength` option through persisted settings. PR #39 is
+  open; local gates passed.
 
 ## Blocked / waiting
 

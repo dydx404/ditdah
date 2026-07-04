@@ -24,6 +24,15 @@ export interface TrainerConfig {
    */
   readonly initialUnlockCount: number
   /**
+   * Prompt shape. `'single'` (default) is one character per prompt. `'group'`
+   * plays a short run of characters (see `groupSize`) — the Phase 3 step up to
+   * copying text. Group mode still draws only from the unlocked Koch set and
+   * scores each position independently, so unlock progression is unchanged.
+   */
+  readonly promptMode?: 'single' | 'group'
+  /** Characters per prompt in `'group'` mode. Default 5. Ignored when single. */
+  readonly groupSize?: number
+  /**
    * Per-character accuracy in [0,1] required to unlock the next Koch character.
    * Evaluated over the most recent `unlockWindow` attempts of the newest char.
    */
@@ -41,18 +50,36 @@ export interface TrainerConfig {
 export interface Prompt {
   /** Opaque id; `submit` must be called with the id of the active prompt. */
   readonly id: string
-  /** The single character the user must copy by ear (uppercase). */
+  /**
+   * The characters to copy by ear (uppercase). One character in `'single'`
+   * mode; a short run (e.g. "KMRKP") in `'group'` mode.
+   */
   readonly text: string
 }
 
-export interface AnswerResult {
+/** Per-position outcome, present on group answers so the UI can colour each. */
+export interface CharResult {
+  /** Expected character at this position (uppercase). */
+  readonly expected: string
+  /** Character the user entered here (uppercase), or '' if they typed too few. */
+  readonly received: string
   readonly correct: boolean
-  /** The prompt's character (uppercase). */
+}
+
+export interface AnswerResult {
+  /** True only when the whole prompt was copied exactly. */
+  readonly correct: boolean
+  /** The prompt's text (uppercase). */
   readonly expected: string
   /** What the user entered, normalized to uppercase. */
   readonly received: string
   /** A Koch character unlocked as a result of this answer, or null. */
   readonly unlocked: string | null
+  /**
+   * Position-by-position breakdown. Present in `'group'` mode; omitted for a
+   * single-character prompt (where `expected`/`received`/`correct` say it all).
+   */
+  readonly perChar?: readonly CharResult[]
 }
 
 export interface CharStat {

@@ -41,10 +41,33 @@ issue (spec + acceptance criteria)  →  branch  →  PR  →  CI green  →  re
    else. Don't reformat, rename, or "improve" code outside your scope — it
    creates merge conflicts with the other agent's in-flight work.
 2. **Contracts are frozen.** Do not change a `core/*/types.ts` marked frozen
-   (currently `morse`, `audio`). If the contract is wrong, open an issue and
-   tag Claude — the fix is a deliberate decision, not an edit.
+   (currently `morse`, `audio`, `trainer`). If the contract is wrong, open an
+   issue and tag Claude — the fix is a deliberate decision, not an edit.
 3. **Build against the interface, not the implementation.** Import types from
    `types.ts`. Don't reach into another module's internals.
+4. **One agent per working directory.** Two agents must NEVER share a checkout —
+   a `git checkout` in a shared tree switches the branch out from under the other
+   and untracked files leak across branches. See "Working directories" below.
+
+## Working directories (isolation)
+
+Each agent works in its **own** directory backed by the same repo, via
+`git worktree`:
+
+- **`~/ditdah`** is **Codex's** primary checkout.
+- **Claude** works in linked worktrees, e.g. `~/ditdah-claude`, created with
+  `git worktree add`. One repo, one `.git`, isolated working trees — zero
+  collisions.
+
+Start-of-task ritual (both agents, in your own directory):
+
+```bash
+git fetch origin
+git checkout main && git pull        # get the latest merged contracts
+git checkout -b <type>/<feature>     # your branch for this issue
+```
+
+Never run `git checkout <branch>` in a directory another agent is using.
 
 ## Coding conventions
 

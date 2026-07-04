@@ -60,9 +60,9 @@ multiple AI agents) work in parallel without colliding — see
 
 Each `core/*` module exposes a frozen `types.ts` that is the contract between
 modules. Implementations are built against it. Changing a signature in a frozen
-`types.ts` is an architecture decision — open an issue before doing it. Modules
-still marked **DRAFT** (`trainer`, `storage`) may still move; `morse` and
-`audio` are frozen because active work depends on them.
+`types.ts` is an architecture decision — open an issue before doing it. `morse`,
+`audio`, and `trainer` are frozen; `storage` is still **DRAFT** (its persisted
+shape settles once the trainer lands).
 
 ## Timing model (core/morse)
 

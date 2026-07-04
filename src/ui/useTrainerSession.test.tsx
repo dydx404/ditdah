@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useTrainerSession } from './useTrainerSession'
-import { createStubTrainer } from './dev/stubTrainer'
+import { createTrainer } from '@/core/trainer'
 import type { ToneEngine, PlayHandle } from '@/core/audio/types'
 import type { TimingConfig } from '@/core/morse/types'
 
@@ -40,7 +40,7 @@ describe('useTrainerSession', () => {
 
   const setup = () => {
     const { engine, calls } = makeFakeEngine()
-    const trainer = createStubTrainer({
+    const trainer = createTrainer({
       timing,
       initialUnlockCount: 2,
       unlockAccuracy: 0.9,

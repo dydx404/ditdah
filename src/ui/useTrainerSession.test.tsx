@@ -38,7 +38,7 @@ describe('useTrainerSession', () => {
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
 
-  const setup = (onAnswered?: (r: unknown) => void) => {
+  const setup = (onAnswered?: (r: unknown) => void, roundLength?: number) => {
     const { engine, calls } = makeFakeEngine()
     const trainer = createTrainer({
       timing,
@@ -52,6 +52,7 @@ describe('useTrainerSession', () => {
         trainer,
         engine,
         timing,
+        roundLength,
         correctHoldMs: 100,
         wrongHoldMs: 100,
         onAnswered: onAnswered as never,
@@ -133,5 +134,35 @@ describe('useTrainerSession', () => {
     const r = view.result.current.lastResult
     expect(r?.correct).toBe(false)
     expect(view.result.current.reveal).toBe(r?.expected)
+  })
+
+  it('ends the round after roundLength prompts and shows a summary', async () => {
+    const { view } = setup(undefined, 2) // 2-prompt round
+    await act(async () => view.result.current.start())
+
+    press('K') // answer 1
+    act(() => vi.advanceTimersByTime(120)) // -> next prompt
+    expect(view.result.current.phase).toBe('listening')
+
+    press('M') // answer 2 (last of the round)
+    act(() => vi.advanceTimersByTime(120)) // -> summary, not another prompt
+
+    expect(view.result.current.phase).toBe('summary')
+    const s = view.result.current.roundSummary
+    expect(s?.total).toBe(2)
+    expect(s?.perChar.reduce((n, c) => n + c.attempts, 0)).toBe(2)
+  })
+
+  it('starts a fresh round on again()', async () => {
+    const { view } = setup(undefined, 1) // 1-prompt round
+    await act(async () => view.result.current.start())
+
+    press('K')
+    act(() => vi.advanceTimersByTime(120))
+    expect(view.result.current.phase).toBe('summary')
+
+    act(() => view.result.current.again())
+    expect(view.result.current.phase).toBe('listening')
+    expect(view.result.current.roundSummary).toBeNull()
   })
 })

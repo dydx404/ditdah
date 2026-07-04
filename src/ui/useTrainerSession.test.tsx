@@ -38,7 +38,7 @@ describe('useTrainerSession', () => {
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
 
-  const setup = () => {
+  const setup = (onAnswered?: (r: unknown) => void) => {
     const { engine, calls } = makeFakeEngine()
     const trainer = createTrainer({
       timing,
@@ -48,7 +48,14 @@ describe('useTrainerSession', () => {
       seed: 1,
     })
     const view = renderHook(() =>
-      useTrainerSession({ trainer, engine, timing, correctHoldMs: 100, wrongHoldMs: 100 }),
+      useTrainerSession({
+        trainer,
+        engine,
+        timing,
+        correctHoldMs: 100,
+        wrongHoldMs: 100,
+        onAnswered: onAnswered as never,
+      }),
     )
     return { engine, calls, trainer, view }
   }
@@ -81,6 +88,20 @@ describe('useTrainerSession', () => {
     act(() => vi.advanceTimersByTime(120))
     expect(view.result.current.phase).toBe('listening')
     expect(calls.play).toBeGreaterThan(playsBefore)
+  })
+
+  it('fires onAnswered once per scored answer (the persistence seam)', async () => {
+    const results: unknown[] = []
+    const { view } = setup((r) => results.push(r))
+    await act(async () => view.result.current.start())
+
+    press('K')
+    expect(results).toHaveLength(1)
+    expect(results[0]).toMatchObject({ expected: expect.any(String) })
+
+    act(() => vi.advanceTimersByTime(120)) // advance to next prompt
+    press('M')
+    expect(results).toHaveLength(2)
   })
 
   it('does not accept a second answer during feedback (no typing ahead)', async () => {

@@ -10,7 +10,7 @@ import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
-import type { Trainer } from '@/core/trainer/types'
+import type { AnswerResult, Trainer } from '@/core/trainer/types'
 import { useTrainerSession } from './useTrainerSession'
 import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
@@ -21,10 +21,17 @@ interface PracticeScreenProps {
   trainer: Trainer
   engine: ToneEngine
   timing: TimingConfig
+  /** Called after each scored answer (the app persists progress). */
+  onAnswered?: (result: AnswerResult) => void
 }
 
-export function PracticeScreen({ trainer, engine, timing }: PracticeScreenProps) {
-  const session = useTrainerSession({ trainer, engine, timing })
+export function PracticeScreen({
+  trainer,
+  engine,
+  timing,
+  onAnswered,
+}: PracticeScreenProps) {
+  const session = useTrainerSession({ trainer, engine, timing, onAnswered })
   const { phase, start, replay } = session
 
   // Space/Enter as controls. Space is not a valid answer key, so it's free to

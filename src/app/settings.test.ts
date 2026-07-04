@@ -1,0 +1,144 @@
+// @vitest-environment jsdom
+// @vitest-environment-options {"url":"https://ditdah.test"}
+import { createElement, useState } from 'react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import {
+  DEFAULT_SETTINGS,
+  loadSettings,
+  normalizeSettings,
+  saveSettings,
+  type Settings,
+} from './settings'
+import { SettingsPanel } from '@/ui/SettingsPanel'
+
+const SETTINGS_KEY = 'ditdah:settings'
+
+describe('settings persistence', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    vi.stubGlobal('localStorage', new MemoryStorage())
+  })
+
+  it('loads defaults when nothing is saved', () => {
+    expect(loadSettings()).toEqual(DEFAULT_SETTINGS)
+  })
+
+  it('loads defaults when saved data is corrupt', () => {
+    storage().setItem(SETTINGS_KEY, 'not json')
+
+    expect(loadSettings()).toEqual(DEFAULT_SETTINGS)
+  })
+
+  it('round-trips saved settings', () => {
+    const settings = {
+      charWpm: 28,
+      effectiveWpm: 18,
+      toneHz: 720,
+      volume: 0.45,
+    } satisfies Settings
+
+    saveSettings(settings)
+
+    expect(loadSettings()).toEqual(settings)
+  })
+
+  it('clamps out-of-range values on load', () => {
+    storage().setItem(
+      SETTINGS_KEY,
+      JSON.stringify({
+        charWpm: 100,
+        effectiveWpm: 0,
+        toneHz: 1200,
+        volume: -1,
+      }),
+    )
+
+    expect(loadSettings()).toEqual({
+      charWpm: 40,
+      effectiveWpm: 5,
+      toneHz: 1000,
+      volume: 0,
+    })
+  })
+
+  it('clamps effective speed when character speed is lowered', () => {
+    expect(
+      normalizeSettings({
+        ...DEFAULT_SETTINGS,
+        charWpm: 12,
+        effectiveWpm: 30,
+      }),
+    ).toMatchObject({
+      charWpm: 12,
+      effectiveWpm: 12,
+    })
+  })
+})
+
+describe('SettingsPanel', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    vi.stubGlobal('localStorage', new MemoryStorage())
+  })
+
+  it('renders and persists a control change', () => {
+    render(createElement(SettingsHarness))
+
+    expect(screen.getByRole('complementary', { name: /settings/i })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Character speed'), {
+      target: { value: '30' },
+    })
+
+    expect(loadSettings().charWpm).toBe(30)
+  })
+})
+
+function SettingsHarness() {
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+
+  return createElement(SettingsPanel, {
+    open: true,
+    settings,
+    onClose: () => {},
+    onSettingsChange: (next: Settings) => {
+      setSettings(next)
+      saveSettings(next)
+    },
+  })
+}
+
+function storage(): Storage {
+  return localStorage
+}
+
+class MemoryStorage implements Storage {
+  private readonly items = new Map<string, string>()
+
+  get length(): number {
+    return this.items.size
+  }
+
+  clear(): void {
+    this.items.clear()
+  }
+
+  getItem(key: string): string | null {
+    return this.items.get(key) ?? null
+  }
+
+  key(index: number): string | null {
+    return Array.from(this.items.keys()).at(index) ?? null
+  }
+
+  removeItem(key: string): void {
+    this.items.delete(key)
+  }
+
+  setItem(key: string, value: string): void {
+    this.items.set(key, value)
+  }
+}

@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#5 — `core/trainer`** (`feat/core-trainer`): Koch session logic (prompts,
-  scoring, unlocks, seeded RNG). Spec + acceptance criteria in the issue.
+- **#15 — Settings** (`feat/settings`): persisted WPM, sidetone, and volume.
+  PR #16 is open and green; awaiting Benson review/merge.
 
 ## Blocked / waiting
 
@@ -18,7 +18,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- Open the PR for #5 (`Closes #5`) once all four gates pass; Claude reviews.
+- After #15 merges, pull `main`, check open issues, then move through Phase 2
+  one specced issue at a time.
 
 ## Open questions
 
@@ -26,5 +27,5 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
-- Stay inside `src/core/trainer/`; do not edit frozen `types.ts`.
+- Frozen contracts are all implemented; never edit any `core/*/types.ts`.
 - Env: `conda activate nodejs` before npm. Gates: `typecheck && test && lint && build`.

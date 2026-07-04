@@ -1,0 +1,132 @@
+import type { Settings } from '@/app/settings'
+import { normalizeSettings } from '@/app/settings'
+
+interface SettingsPanelProps {
+  open: boolean
+  settings: Settings
+  onSettingsChange: (settings: Settings) => void
+  onClose: () => void
+}
+
+export function SettingsPanel({
+  open,
+  settings,
+  onSettingsChange,
+  onClose,
+}: SettingsPanelProps) {
+  if (!open) {
+    return null
+  }
+
+  const update = (patch: Partial<Settings>) => {
+    onSettingsChange(normalizeSettings({ ...settings, ...patch }))
+  }
+
+  return (
+    <div className="fixed inset-0 z-30">
+      <button
+        type="button"
+        aria-label="Close settings"
+        className="absolute inset-0 h-full w-full cursor-default bg-bg/70"
+        onClick={onClose}
+      />
+      <aside
+        aria-label="Settings"
+        className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col border-l border-border bg-surface p-5 shadow-2xl"
+      >
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-mono text-lg font-semibold text-text">Settings</h2>
+            <p className="mt-1 text-sm text-muted">Tune the sound, keep the rhythm.</p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close settings"
+            onClick={onClose}
+            className="grid h-9 w-9 place-items-center rounded-md border border-border font-mono text-muted transition hover:text-text"
+          >
+            x
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <SettingSlider
+            label="Character speed"
+            value={settings.charWpm}
+            min={10}
+            max={40}
+            step={1}
+            display={`${settings.charWpm} WPM`}
+            onChange={(charWpm) => update({ charWpm })}
+          />
+          <SettingSlider
+            label="Overall speed"
+            value={settings.effectiveWpm}
+            min={5}
+            max={settings.charWpm}
+            step={1}
+            display={`${settings.effectiveWpm} WPM`}
+            onChange={(effectiveWpm) => update({ effectiveWpm })}
+          />
+          <SettingSlider
+            label="Sidetone"
+            value={settings.toneHz}
+            min={400}
+            max={1000}
+            step={10}
+            display={`${settings.toneHz} Hz`}
+            onChange={(toneHz) => update({ toneHz })}
+          />
+          <SettingSlider
+            label="Volume"
+            value={settings.volume}
+            min={0}
+            max={1}
+            step={0.05}
+            display={`${Math.round(settings.volume * 100)}%`}
+            onChange={(volume) => update({ volume })}
+          />
+        </div>
+      </aside>
+    </div>
+  )
+}
+
+interface SettingSliderProps {
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+  display: string
+  onChange: (value: number) => void
+}
+
+function SettingSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  display,
+  onChange,
+}: SettingSliderProps) {
+  return (
+    <label className="flex flex-col gap-2">
+      <span className="flex items-baseline justify-between gap-4 font-mono text-sm">
+        <span className="text-muted">{label}</span>
+        <span className="tabular-nums text-text">{display}</span>
+      </span>
+      <input
+        type="range"
+        aria-label={label}
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(event) => onChange(Number(event.currentTarget.value))}
+        className="w-full accent-accent"
+      />
+    </label>
+  )
+}

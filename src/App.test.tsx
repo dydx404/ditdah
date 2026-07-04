@@ -59,5 +59,13 @@ describe('App persistence', () => {
     for (const c of ['K', 'M', 'U', 'R']) {
       expect(screen.getByText(c)).toBeInTheDocument()
     }
+    // The saved 2-day streak surfaces in the HUD.
+    expect(screen.getByTitle('2-day streak')).toBeInTheDocument()
+  })
+
+  it('does not show a streak when there is none', async () => {
+    render(<App />)
+    await screen.findByRole('button', { name: /start listening/i })
+    expect(screen.queryByTitle(/day streak/)).not.toBeInTheDocument()
   })
 })

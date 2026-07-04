@@ -49,6 +49,40 @@ describe('CharacterReference', () => {
       },
     ])
   })
+
+  it('hides dit/dah patterns by default (sound-first)', () => {
+    render(
+      <CharacterReference
+        unlocked={['K']}
+        timing={timing}
+        engine={fakeEngine().engine}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /character reference/i }))
+
+    expect(
+      screen.queryByRole('columnheader', { name: /pattern/i }),
+    ).not.toBeInTheDocument()
+    // K is dah-dit-dah; its glyphs must not appear when patterns are off.
+    expect(screen.queryByText('– · –')).not.toBeInTheDocument()
+  })
+
+  it('shows dit/dah patterns when opted in', () => {
+    render(
+      <CharacterReference
+        unlocked={['K']}
+        timing={timing}
+        engine={fakeEngine().engine}
+        showPatterns
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /character reference/i }))
+
+    expect(
+      screen.getByRole('columnheader', { name: /pattern/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('– · –')).toBeInTheDocument() // K = dah dit dah
+  })
 })
 
 function fakeEngine() {

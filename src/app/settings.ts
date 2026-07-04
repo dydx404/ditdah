@@ -7,11 +7,18 @@ export interface Settings {
   readonly effectiveWpm: number
   readonly toneHz: number
   readonly volume: number
+  /**
+   * Show visual dit/dah patterns in the character reference. Default OFF: the
+   * sound-first default never puts a dot/dash chart in front of the learner
+   * (that builds the translation habit). Opt-in for those who want a reference.
+   */
+  readonly showPatterns: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   ...DEFAULT_TIMING,
   volume: 0.7,
+  showPatterns: false,
 }
 
 export function loadSettings(): Settings {
@@ -75,6 +82,7 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
       0,
       1,
     ),
+    showPatterns: value.showPatterns === true,
   }
 }
 

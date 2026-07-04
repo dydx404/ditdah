@@ -86,6 +86,12 @@ export function SettingsPanel({
             display={`${Math.round(settings.volume * 100)}%`}
             onChange={(volume) => update({ volume })}
           />
+          <SettingToggle
+            label="Show dit/dah patterns"
+            hint="Off by default — learning by ear is the point. Turn on for a visual reference."
+            checked={settings.showPatterns}
+            onChange={(showPatterns) => update({ showPatterns })}
+          />
         </div>
       </aside>
     </div>
@@ -127,6 +133,31 @@ function SettingSlider({
         onChange={(event) => onChange(Number(event.currentTarget.value))}
         className="w-full accent-accent"
       />
+    </label>
+  )
+}
+
+interface SettingToggleProps {
+  label: string
+  hint: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
+function SettingToggle({ label, hint, checked, onChange }: SettingToggleProps) {
+  return (
+    <label className="flex cursor-pointer flex-col gap-1">
+      <span className="flex items-center justify-between gap-4 font-mono text-sm">
+        <span className="text-muted">{label}</span>
+        <input
+          type="checkbox"
+          aria-label={label}
+          checked={checked}
+          onChange={(event) => onChange(event.currentTarget.checked)}
+          className="h-4 w-4 accent-accent"
+        />
+      </span>
+      <span className="text-xs text-muted/70">{hint}</span>
     </label>
   )
 }

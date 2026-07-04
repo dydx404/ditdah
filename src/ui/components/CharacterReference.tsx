@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { KOCH_ORDER, renderToElements } from '@/core/morse'
+import { KOCH_ORDER, renderToElements, symbolsFor } from '@/core/morse'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
 
@@ -7,12 +7,25 @@ interface CharacterReferenceProps {
   unlocked: readonly string[]
   timing: TimingConfig
   engine: ToneEngine
+  /**
+   * Show the visual dit/dah pattern column. Off by default — sound-first. Opt-in
+   * via Settings; see `Settings.showPatterns`.
+   */
+  showPatterns?: boolean
+}
+
+const PATTERN_GLYPH = { dit: '·', dah: '–' } as const
+
+function patternFor(char: string): string {
+  const symbols = symbolsFor(char)
+  return symbols ? symbols.map((s) => PATTERN_GLYPH[s]).join(' ') : ''
 }
 
 export function CharacterReference({
   unlocked,
   timing,
   engine,
+  showPatterns = false,
 }: CharacterReferenceProps) {
   const [open, setOpen] = useState(false)
   const unlockedSet = useMemo(() => new Set(unlocked), [unlocked])
@@ -54,6 +67,11 @@ export function CharacterReference({
                 <th scope="col" className="px-3 py-2 text-left font-normal">
                   status
                 </th>
+                {showPatterns && (
+                  <th scope="col" className="px-3 py-2 text-left font-normal">
+                    pattern
+                  </th>
+                )}
                 <th scope="col" className="px-3 py-2 text-right font-normal">
                   sound
                 </th>
@@ -71,6 +89,11 @@ export function CharacterReference({
                     <td className={isUnlocked ? 'px-3 py-2 text-accent' : 'px-3 py-2 text-muted'}>
                       {isUnlocked ? 'unlocked' : 'upcoming'}
                     </td>
+                    {showPatterns && (
+                      <td className="px-3 py-2 tracking-wider text-muted">
+                        {patternFor(char)}
+                      </td>
+                    )}
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"

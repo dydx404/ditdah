@@ -6,39 +6,34 @@ _Written only by Claude. Snapshot, not a diary. Last updated: 2026-07-04._
 
 `~/ditdah-claude` (linked worktree; `~/ditdah` is Codex's — never touch it).
 
-## Done (this session)
+## Done (on `main`)
 
-- Real v0 loop is live on `main`: morse (#2) + audio (#3) + trainer (#6) + loop
-  UI (#7) + stub→real swap (#9). Benson validated the audio/vibe. ✅
-- Storage contract frozen (#10). All four core contracts now frozen.
+- v0 loop **live**: https://dydx404.github.io/ditdah/ — morse/audio/trainer/UI,
+  progress persistence, deploy. Benson validated the audio/vibe. ✅
+- Retention: Settings (#16), streak logic (#20) + streak HUD (#24), opt-in
+  dit/dah patterns (#22, default off — product law upheld).
 
 ## In flight
 
-- **PR (this)** — `feat/deploy-gh-pages`: Vite `base: /ditdah/` (prod only) +
-  Pages Actions workflow. Build emits `/ditdah/` paths; gates green.
-
-## Blocked / waiting
-
-- **#11 (Codex, `core/storage`)** — localStorage persistence. When it merges I
-  wire it into the app (below).
-- **Benson action:** after deploy PR merges, enable Pages once
-  (Settings → Pages → Source: **GitHub Actions**).
+- **PR (this)** — `feat/practice-rounds`: fixed rounds (25 prompts) →
+  SummaryScreen (accuracy, weak chars, unlocks, streak) → "practice again".
+  Round stats accumulated in the hook; trainer untouched. 76 tests green.
+- **Codex → PWA (#23)** — installable/offline, on `feat/pwa` (touches
+  vite.config/index.html/main.tsx/pwa.ts; no overlap with my files).
 
 ## Next (my lane)
 
-1. Wire storage into the app once #11 lands: load Progress on open, save on each
-   answer/unlock, **rehydrate the trainer via `initialUnlockCount =
-   progress.unlocked.length`** (no trainer-contract change needed). Persist
-   charStats + streak too.
-2. Mobile: on-screen tap input (answer buttons) so it's usable on a phone.
-3. Phase 2: settings (WPM/tone/volume), session history, streak UI.
+1. (Optional) make round length a setting.
+2. Session history over time (accuracy/WPM trend) — we persist charStats already.
+3. Watch real usage before adding more surface.
 
-## Open questions
+## Open questions / decisions
 
-- Default WPM (20/10) + 600 Hz — keep, or expose settings sooner?
+- **#21 accounts & cloud sync** is `needs-spec`. My rec: keep deferred — v0 is
+  zero-friction / local-first; accounts betray the wedge. Park it.
+- Round length: 25 default; make configurable if it feels long/short in use.
 
 ## Notes
 
-- Env: `conda activate nodejs` before npm (WSL; Linux node in conda).
-- Gates before any PR: `typecheck && test && lint && build`.
-- Deploy: prod base is `/ditdah/`; dev/test stay at `/`.
+- Env: `conda activate nodejs` before npm. Gates: `typecheck && test && lint && build`.
+- Deploy is automatic on merge to `main` (Pages). Prod base `/ditdah/`; dev/test `/`.

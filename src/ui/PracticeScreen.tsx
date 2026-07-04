@@ -16,6 +16,7 @@ import { useTrainerSession } from './useTrainerSession'
 import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
 import { FeedbackReveal } from './components/FeedbackReveal'
+import { SummaryScreen } from './components/SummaryScreen'
 import { UnlockToast } from './components/UnlockToast'
 import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
@@ -42,11 +43,12 @@ export function PracticeScreen({
   onAnswered,
 }: PracticeScreenProps) {
   const session = useTrainerSession({ trainer, engine, timing, onAnswered })
-  const { phase, start, replay } = session
+  const { phase, start, replay, again } = session
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   // Space/Enter as controls. Space is not a valid answer key, so it's free to
-  // mean "start" (idle) and "replay" (listening) without clashing with copying.
+  // mean "start" (idle), "replay" (listening), and "again" (summary) without
+  // clashing with copying.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
@@ -56,11 +58,14 @@ export function PracticeScreen({
       } else if (phase === 'listening' && e.key === ' ') {
         e.preventDefault()
         replay()
+      } else if (phase === 'summary' && (e.key === ' ' || e.key === 'Enter')) {
+        e.preventDefault()
+        again()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, start, replay])
+  }, [phase, start, replay, again])
 
   return (
     <div className="relative flex h-full flex-col">
@@ -139,6 +144,21 @@ export function PracticeScreen({
               <FeedbackReveal result={session.lastResult} />
             </motion.div>
           )}
+
+          {phase === 'summary' && session.roundSummary && (
+            <motion.div
+              key="summary"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <SummaryScreen
+                summary={session.roundSummary}
+                streak={streak}
+                onAgain={again}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
@@ -149,8 +169,8 @@ export function PracticeScreen({
           engine={engine}
           showPatterns={settings.showPatterns}
         />
-        <div className="flex items-center justify-center gap-4 px-6 py-4 font-mono text-xs text-muted/70">
-          {phase === 'listening' ? (
+        <div className="flex h-12 items-center justify-center gap-4 px-6 font-mono text-xs text-muted/70">
+          {phase === 'listening' && (
             <button
               type="button"
               onClick={replay}
@@ -158,9 +178,8 @@ export function PracticeScreen({
             >
               replay (Space)
             </button>
-          ) : (
-            <span>type the letter you hear</span>
           )}
+          {phase === 'feedback' && <span>type the letter you hear</span>}
         </div>
       </footer>
     </div>

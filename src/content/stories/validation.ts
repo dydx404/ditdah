@@ -1,0 +1,90 @@
+import { symbolsFor } from '@/core/morse'
+import type { Campaign, Chapter, StoryLine } from './types'
+
+export interface StoryContentIssue {
+  readonly path: string
+  readonly message: string
+}
+
+export function validateCampaign(campaign: Campaign): StoryContentIssue[] {
+  const issues: StoryContentIssue[] = []
+  const chapterIds = new Set<string>()
+
+  if (campaign.id.trim().length === 0) {
+    issues.push({ path: 'campaign.id', message: 'Campaign id is required' })
+  }
+
+  campaign.chapters.forEach((chapter, chapterIndex) => {
+    const chapterPath = `chapters[${chapterIndex}]`
+    if (chapterIds.has(chapter.id)) {
+      issues.push({ path: `${chapterPath}.id`, message: 'Chapter id is duplicated' })
+    }
+    chapterIds.add(chapter.id)
+    issues.push(...validateChapter(chapter, chapterPath))
+  })
+
+  return issues
+}
+
+export function validateChapter(
+  chapter: Chapter,
+  path = 'chapter',
+): StoryContentIssue[] {
+  const issues: StoryContentIssue[] = []
+  const characterIds = new Set(chapter.characters.map((character) => character.id))
+  const lineIds = new Set<string>()
+
+  if (chapter.lines.length === 0) {
+    issues.push({ path: `${path}.lines`, message: 'Chapter needs at least one line' })
+  }
+
+  chapter.lines.forEach((line, lineIndex) => {
+    const linePath = `${path}.lines[${lineIndex}]`
+    if (lineIds.has(line.id)) {
+      issues.push({ path: `${linePath}.id`, message: 'Line id is duplicated' })
+    }
+    lineIds.add(line.id)
+
+    if (line.speaker !== 'you' && !characterIds.has(line.speaker)) {
+      issues.push({ path: `${linePath}.speaker`, message: 'Speaker is unknown' })
+    }
+    issues.push(...validateLine(line, linePath))
+  })
+
+  return issues
+}
+
+export function validateLine(
+  line: StoryLine,
+  path = 'line',
+): StoryContentIssue[] {
+  const issues: StoryContentIssue[] = []
+
+  if (line.text !== line.text.toUpperCase()) {
+    issues.push({ path: `${path}.text`, message: 'Line text must be uppercase' })
+  }
+  if (!isSupportedStoryText(line.text)) {
+    issues.push({
+      path: `${path}.text`,
+      message: 'Line text contains unsupported Morse characters',
+    })
+  }
+  if (
+    line.passAccuracy !== undefined &&
+    (line.passAccuracy < 0 || line.passAccuracy > 1)
+  ) {
+    issues.push({
+      path: `${path}.passAccuracy`,
+      message: 'Pass accuracy must be between 0 and 1',
+    })
+  }
+
+  return issues
+}
+
+export function isSupportedStoryText(text: string): boolean {
+  return (
+    text.trim().length > 0 &&
+    [...text].every((char) => symbolsFor(char) !== undefined || /\s/.test(char))
+  )
+}

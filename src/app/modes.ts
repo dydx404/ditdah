@@ -6,6 +6,7 @@
  * chosen mode. New practice types (words, callsigns, numbers, …) are added here
  * as they land, so the home screen grows without new plumbing.
  */
+import { DIGIT_CHARS } from './charset'
 import type { Settings } from './settings'
 import type { MessageKey } from '@/i18n'
 
@@ -58,14 +59,21 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
     id: 'numbers',
     nameKey: 'mode.numbers.name',
     blurbKey: 'mode.numbers.blurb',
-    available: false,
+    available: true,
+    apply: { charSource: 'custom', customCharset: DIGIT_CHARS },
   },
 ]
 
 /** The mode the current settings correspond to (drives the home-screen highlight). */
 export function activeModeId(
-  settings: Pick<Settings, 'promptMode' | 'charSource'>,
+  settings: Pick<Settings, 'promptMode' | 'charSource' | 'customCharset'>,
 ): string {
-  if (settings.charSource === 'custom') return 'free'
+  if (settings.charSource === 'custom') {
+    return sameCharset(settings.customCharset, DIGIT_CHARS) ? 'numbers' : 'free'
+  }
   return settings.promptMode === 'group' ? 'groups' : 'learn'
+}
+
+function sameCharset(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((char, index) => char === b[index])
 }

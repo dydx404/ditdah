@@ -4,6 +4,7 @@ import type { CharProgress } from '@/core/storage/types'
 import { LOCALES, useT } from '@/i18n'
 import { AccountSection, type AccountState } from './AccountSection'
 import { CharacterPicker } from './components/CharacterPicker'
+import { CustomTextImport } from './components/CustomTextImport'
 
 interface SettingsPanelProps {
   open: boolean
@@ -65,12 +66,23 @@ export function SettingsPanel({
         <div className="flex flex-col gap-6">
           {account && <AccountSection {...account} />}
           {settings.charSource === 'custom' && (
-            <CharacterPicker
-              value={settings.customCharset}
-              unlockedChars={unlockedChars}
-              charStats={charStats}
-              onChange={(customCharset) => update({ customCharset })}
-            />
+            <>
+              <CustomTextImport
+                text={settings.customText}
+                activeCount={settings.promptPool.length}
+                onTextChange={(customText) => update({ customText })}
+                onApply={(promptPool) => update({ promptPool })}
+                onClear={() => update({ promptPool: [] })}
+              />
+              {settings.promptPool.length === 0 && (
+                <CharacterPicker
+                  value={settings.customCharset}
+                  unlockedChars={unlockedChars}
+                  charStats={charStats}
+                  onChange={(customCharset) => update({ customCharset })}
+                />
+              )}
+            </>
           )}
           <div className="flex flex-col gap-2">
             <span className="font-mono text-sm text-muted">

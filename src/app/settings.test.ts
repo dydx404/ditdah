@@ -46,6 +46,7 @@ describe('settings persistence', () => {
       charSource: 'custom',
       customCharset: ['A', 'B', '1'],
       promptPool: ['CQ', '73'],
+      customText: 'hello world',
       strictGate: false,
       answerSounds: false,
       showPatterns: true,
@@ -80,6 +81,7 @@ describe('settings persistence', () => {
       charSource: 'koch',
       customCharset: DEFAULT_CUSTOM_CHARSET,
       promptPool: [],
+      customText: '',
       strictGate: true,
       answerSounds: true,
       showPatterns: false,
@@ -137,6 +139,14 @@ describe('settings persistence', () => {
         promptPool: COMMON_WORD_POOL,
       }).promptPool,
     ).toEqual(COMMON_WORD_POOL)
+  })
+
+  it('defaults and preserves custom text', () => {
+    expect(normalizeSettings({}).customText).toBe('')
+    expect(normalizeSettings({ customText: 'hello world' }).customText).toBe(
+      'hello world',
+    )
+    expect(normalizeSettings({ customText: 42 as never }).customText).toBe('')
   })
 
   it('defaults showPatterns off and coerces non-booleans to false', () => {
@@ -213,6 +223,29 @@ describe('SettingsPanel', () => {
     expect(screen.getByText('Training characters')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Toggle A' }))
     expect(loadSettings().customCharset).toContain('A')
+  })
+
+  it('activates and clears a custom text prompt pool', () => {
+    render(createElement(SettingsHarness, { custom: true }))
+
+    fireEvent.change(screen.getByLabelText('Practice text'), {
+      target: { value: 'hello world @@@ 73' },
+    })
+
+    expect(loadSettings().customText).toBe('hello world @@@ 73')
+    expect(screen.getByText('3 prompts ready')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Use text' }))
+
+    expect(loadSettings().promptPool).toEqual(['HELLO', 'WORLD', '73'])
+    expect(screen.getByText('3 prompts active')).toBeInTheDocument()
+    expect(screen.queryByText('Training characters')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear text' }))
+
+    expect(loadSettings().promptPool).toEqual([])
+    expect(loadSettings().customText).toBe('hello world @@@ 73')
+    expect(screen.getByText('Training characters')).toBeInTheDocument()
   })
 })
 

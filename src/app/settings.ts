@@ -30,6 +30,8 @@ export interface Settings {
   readonly customCharset: readonly string[]
   /** Explicit prompt strings for pool-driven modes such as words. */
   readonly promptPool: readonly string[]
+  /** Last pasted/imported custom text, kept local for quick reuse. */
+  readonly customText: string
   /** Keep a missed prompt gated until the learner echoes it correctly. */
   readonly strictGate: boolean
   /** Play short correct/wrong UI answer cues. */
@@ -52,6 +54,7 @@ export const DEFAULT_SETTINGS: Settings = {
   charSource: 'koch',
   customCharset: DEFAULT_CUSTOM_CHARSET,
   promptPool: [],
+  customText: '',
   strictGate: true,
   answerSounds: true,
   showPatterns: false,
@@ -134,6 +137,7 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
     charSource: value.charSource === 'custom' ? 'custom' : 'koch',
     customCharset: normalizeCustomCharset(value.customCharset),
     promptPool: normalizePromptPool(value.promptPool),
+    customText: typeof value.customText === 'string' ? value.customText : '',
     strictGate: value.strictGate !== false,
     answerSounds: value.answerSounds !== false,
     showPatterns: value.showPatterns === true,

@@ -18,6 +18,7 @@ describe('StoryChapterSelect', () => {
     expect(screen.getByText('Story Mode')).toBeInTheDocument()
     expect(screen.getByText('First Contact')).toBeInTheDocument()
     expect(screen.getByText('Storm Watch')).toBeInTheDocument()
+    expect(screen.getByText('Harbor Relay')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /First Contact/ }))
 
@@ -37,12 +38,13 @@ describe('StoryChapterSelect', () => {
     fireEvent.click(screen.getByRole('button', { name: /Storm Watch/ }))
 
     expect(screen.getByRole('button', { name: /Storm Watch/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Harbor Relay/ })).toBeDisabled()
     expect(onStartChapter).not.toHaveBeenCalled()
   })
 
-  it('unlocks the follow-up chapter after First Contact progress exists', () => {
+  it('unlocks each follow-up chapter after its previous chapter is complete', () => {
     const onStartChapter = vi.fn()
-    render(
+    const { rerender } = render(
       <StoryChapterSelect
         campaign={STORY_CAMPAIGN}
         progress={[
@@ -65,8 +67,36 @@ describe('StoryChapterSelect', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Storm Watch/ }))
     expect(onStartChapter).toHaveBeenCalledWith(STORY_CAMPAIGN.chapters[1])
+    expect(screen.getByRole('button', { name: /Harbor Relay/ })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: /First Contact/ }))
     expect(onStartChapter).toHaveBeenLastCalledWith(STORY_CAMPAIGN.chapters[0])
+
+    rerender(
+      <StoryChapterSelect
+        campaign={STORY_CAMPAIGN}
+        progress={[
+          {
+            chapterId: 'first-contact',
+            completedAt: '2026-07-05T10:00:00.000Z',
+            bestAccuracy: 0.92,
+            assistedLines: 1,
+            playCount: 2,
+          },
+          {
+            chapterId: 'storm-watch',
+            completedAt: '2026-07-05T11:00:00.000Z',
+            bestAccuracy: 0.88,
+            assistedLines: 0,
+            playCount: 1,
+          },
+        ]}
+        onBack={() => {}}
+        onStartChapter={onStartChapter}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Harbor Relay/ }))
+    expect(onStartChapter).toHaveBeenLastCalledWith(STORY_CAMPAIGN.chapters[2])
   })
 })

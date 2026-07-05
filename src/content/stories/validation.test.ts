@@ -2,13 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { STORY_CAMPAIGN, validateCampaign } from '.'
 
 describe('story content', () => {
-  it('ships First Contact and a locked follow-up chapter with supported CW text', () => {
-    const [first, second] = STORY_CAMPAIGN.chapters
+  it('ships a three-chapter campaign with supported CW text', () => {
+    const [first, second, third] = STORY_CAMPAIGN.chapters
 
-    expect(STORY_CAMPAIGN.chapters).toHaveLength(2)
+    expect(STORY_CAMPAIGN.chapters).toHaveLength(3)
     expect(first.id).toBe('first-contact')
     expect(second.id).toBe('storm-watch')
+    expect(third.id).toBe('harbor-relay')
     expect(second.unlock?.previousChapterId).toBe('first-contact')
+    expect(third.unlock?.previousChapterId).toBe('storm-watch')
     for (const chapter of STORY_CAMPAIGN.chapters) {
       expect(chapter.lines.length).toBeGreaterThanOrEqual(8)
       expect(chapter.lines.length).toBeLessThanOrEqual(12)

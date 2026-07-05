@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#85 — Story Mode completion actions** on `feat/story-completion-actions`:
-  completion-screen back/next chapter flow.
+- **#87 — Story Mode locked chapter hints** on `feat/story-lock-hints`:
+  compact unlock requirements on locked chapter cards.
 
 ## Blocked / waiting
 
@@ -18,7 +18,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #85, continue Story Mode one slice at a time: more chapters, better
+- After #87, continue Story Mode one slice at a time: more chapters, better
   mission feel, or a deliberate synced progress schema issue if Benson wants
   cross-device story state.
 

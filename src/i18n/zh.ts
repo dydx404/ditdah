@@ -123,6 +123,7 @@ export const zh: Partial<Messages> = {
   'story.chapter.completed': '已完成',
   'story.chapter.best': '最佳 {percent}%',
   'story.chapter.plays': '练习 {count} 次',
+  'story.chapter.unlockAfter': '完成 {chapter}',
   'story.progress': '{current} / {total}',
   'story.incoming': '来报',
   'story.retry': '再试一次',

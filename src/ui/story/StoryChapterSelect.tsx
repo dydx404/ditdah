@@ -19,6 +19,9 @@ export function StoryChapterSelect({
   const completedChapterIds = new Set(
     progress.map((record) => record.chapterId),
   )
+  const chapterTitleById = new Map(
+    campaign.chapters.map((chapter) => [chapter.id, chapter.title]),
+  )
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-6">
@@ -46,6 +49,10 @@ export function StoryChapterSelect({
       <div className="grid gap-3">
         {campaign.chapters.map((chapter) => {
           const locked = isChapterLocked(chapter, completedChapterIds)
+          const unlockTitle =
+            locked && chapter.unlock?.previousChapterId
+              ? chapterTitleById.get(chapter.unlock.previousChapterId)
+              : undefined
           const chapterProgress = progress.find(
             (record) => record.chapterId === chapter.id,
           )
@@ -96,6 +103,11 @@ export function StoryChapterSelect({
                       })}
                     </span>
                   </>
+                )}
+                {unlockTitle && (
+                  <span className="max-w-32 text-right text-xs text-muted/80">
+                    {t('story.chapter.unlockAfter', { chapter: unlockTitle })}
+                  </span>
                 )}
               </span>
             </button>

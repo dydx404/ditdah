@@ -9,7 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- Nothing in flight.
+- #91 guidebook: researched beginner-to-proficient CW learner guide, README
+  entry point, and status update on branch `docs/cw-guidebook`.
 
 ## Blocked / waiting
 

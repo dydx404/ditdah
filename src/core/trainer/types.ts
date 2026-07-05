@@ -6,8 +6,9 @@
  * audio, no DOM, no storage. The UI drives it and asks core/audio to play the
  * prompts it produces; the trainer itself never touches audio.
  *
- * v0 scope: each prompt is a SINGLE character drawn from the unlocked Koch set.
- * (Group/word prompts are a deliberate later addition — see ARCHITECTURE.md.)
+ * Prompt sources: Koch progression, explicit free-training charsets, or an
+ * explicit pool of prompt strings for advanced modes. Sound-first remains the
+ * invariant: the UI plays `Prompt.text`; the trainer only generates and scores.
  *
  * FROZEN interface. Implementations build against it; changing a signature here
  * is an architecture decision — open an issue first.
@@ -38,6 +39,13 @@ export interface TrainerConfig {
    * and Koch unlock progression is disabled for the session.
    */
   readonly charset?: readonly string[]
+  /**
+   * Optional explicit pool of complete prompt strings for advanced modes (words,
+   * callsigns, imported text, QSO snippets). When present and non-empty, prompts
+   * draw whole strings from this pool instead of Koch/charset/group generation,
+   * and Koch unlock progression is disabled for the session.
+   */
+  readonly promptPool?: readonly string[]
   /**
    * Per-character accuracy in [0,1] required to unlock the next Koch character.
    * Evaluated over the most recent `unlockWindow` attempts of the newest char.

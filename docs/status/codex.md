@@ -9,16 +9,16 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#56 — Numbers mode** on `feat/numbers-mode`: mode card applies the 0–9
-  custom charset now that #61 is merged.
+- **#55 — Prompt-pool trainer foundation** on `feat/prompt-pool`: additive
+  `TrainerConfig.promptPool` for words/callsigns/custom text/QSO.
 
 ## Blocked / waiting
 
-- #55–#60 are the advanced-mode queue after free-training UI.
+- #57–#60 are queued after prompt-pool lands.
 
 ## Next
 
-- After #56, implement #55 prompt-pool foundation, then #57–#60 in order.
+- After #55, implement #57 Words, #58 Callsigns, #59 Custom text, #60 QSO.
 
 ## Open questions
 

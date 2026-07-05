@@ -46,14 +46,21 @@ Reasons to come back tomorrow.
 - ✅ Configurable round length (#33)
 - ✅ Strict mode + answer-sounds toggles (#34)
 
-## Phase 3 — Depth 💭
+## Phase 3 — Depth 🚧
 
 From "copies letters" to "copies text."
 
+- ✅ Charset foundation for free training and numbers (#52)
+- ✅ Free training character picker + presets (#61)
+- ✅ Numbers mode (#56, #63)
+- ✅ Prompt-pool trainer foundation (#55)
+- ✅ Word prompts (#57)
+- ✅ Callsign prompts (#58)
+- ✅ Custom text paste/import v1 (#59)
+- ✅ QSO simulator v1 — curated contact exchanges (#60)
 - 💭 Full Koch set to fluency; per-character weakness targeting
-- 💭 Group / word / callsign prompts (extend the trainer beyond single chars)
 - 💭 Live timing analysis (character/word-spacing accuracy)
-- 💭 Monkeytype-style free practice; import TXT/Markdown/EPUB
+- 💭 TXT/Markdown/EPUB import beyond paste-in text
 - 💭 Head-copy drills (no typing)
 
 ## Phase 4 — Delight & community 💭
@@ -66,7 +73,17 @@ Earned only after the loop is genuinely sticky.
 - 💭 Historical campaigns (WWII, maritime), contest sim, AI QSO partner
 - 💭 Multiplayer / friend battles / real online CW
 
+## Proposed next bets 💭
+
+Do not build these without a specced issue and Benson's 👍.
+
+- QSO v2: a stateful scripted contact instead of a flat prompt pool.
+- Realism layer: optional QSB/QRN-style receiving difficulty.
+- Speed builder: short adaptive bursts above comfort speed.
+- Sending mode: keyboard/key input with timing analysis.
+
 ## Explicitly not now
 
-Accounts/back-end, anything social, sending analysis, hardware — all deferred
-until the receiving loop retains. See ARCHITECTURE.md "Non-goals for v0".
+Anything social, sending analysis, hardware, and deeper backend features beyond
+the current opt-in sync are deferred until the receiving loop retains. See
+ARCHITECTURE.md "Non-goals for v0".

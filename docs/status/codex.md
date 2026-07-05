@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#60 — QSO simulator v1** on `feat/qso-mode`: curated contact exchange
-  prompt pool wired through a QSO mode card.
+- **Roadmap/status close-out** on `docs/advanced-mode-status`: mark the
+  completed advanced-mode queue and list proposed next bets.
 
 ## Blocked / waiting
 
@@ -18,7 +18,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #60, update the roadmap/status and propose the next advanced-mode issue.
+- Wait for Benson to pick/spec the next issue. Candidate bets: QSO v2 stateful
+  contact, optional QSB/QRN realism, speed builder, sending mode.
 
 ## Open questions
 
@@ -26,6 +27,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- #55-#60 advanced-mode queue is merged on main through PR #68. Main CI and
+  Pages were green after #68.
 - #50 cloud sync and #52 charset core are merged on main. #52 Pages deploy hit
   GitHub's transient "try again later" once and passed on rerun.
 - UI localization extraction merged as PR #47; local gates, PR CI, main CI, and

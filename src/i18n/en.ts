@@ -26,12 +26,17 @@ export const en = {
   'mode.qso.blurb': 'Copy contact-style exchanges.',
   'mode.numbers.name': 'Numbers',
   'mode.numbers.blurb': 'Digit drills.',
+  'mode.story.name': 'Story',
+  'mode.story.blurb': 'Play narrative radio chapters.',
   'home.hint': 'press Space · turn your sound on',
 
   // Actions
   'action.start': 'Start listening',
   'action.soon': 'soon',
   'action.close': 'Close settings',
+  'action.back': 'Back',
+  'action.exit': 'Exit',
+  'action.continue': 'Continue',
   'action.openHistory': 'Open history',
   'action.openSettings': 'Open settings',
   'action.closeHistory': 'Close history',
@@ -123,6 +128,27 @@ export const en = {
   'summary.unlocked': '🔓 unlocked {chars}',
   'summary.keepWorking': 'keep working on ',
   'summary.pressSpace': 'press Space',
+
+  // Story mode
+  'story.title': 'Story Mode',
+  'story.chapterSelect.eyebrow': 'Campaign',
+  'story.chapterSelect.subtitle':
+    'Choose a chapter. Incoming lines stay hidden until you copy them by ear.',
+  'story.chapter.start': 'Start',
+  'story.chapter.locked': 'Locked',
+  'story.progress': '{current} / {total}',
+  'story.incoming': 'Incoming',
+  'story.retry': 'Try again',
+  'story.assist': 'Assist',
+  'story.send': 'Your reply',
+  'story.narration': 'Scene',
+  'story.you': 'You',
+  'story.hiddenCopy': 'Copy by ear. The message appears after you try.',
+  'story.lastAccuracy': 'last copy {percent}%',
+  'story.sendHint': 'Type this reply to send it.',
+  'story.assistHint': 'Echo the revealed line to continue.',
+  'story.complete': 'chapter complete',
+  'story.summary': '{correct} / {total} copied · {assisted} assisted',
 
   // History
   'history.title': 'History',

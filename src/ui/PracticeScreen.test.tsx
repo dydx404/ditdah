@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { PracticeScreen } from './PracticeScreen'
 import { createTrainer } from '@/core/trainer'
 import type { ToneEngine } from '@/core/audio/types'
@@ -58,5 +58,31 @@ describe('PracticeScreen', () => {
     // learner's unlocked set (K, M) is shown in the HUD.
     expect(screen.getByText('K')).toBeInTheDocument()
     expect(screen.getByText('M')).toBeInTheDocument()
+  })
+
+  it('opens the Story chapter select from the idle screen', async () => {
+    const trainer = createTrainer({
+      timing,
+      initialUnlockCount: 2,
+      unlockAccuracy: 0.9,
+      unlockWindow: 5,
+      seed: 1,
+    })
+    render(
+      <PracticeScreen
+        trainer={trainer}
+        engine={fakeEngine}
+        timing={timing}
+        settings={DEFAULT_SETTINGS}
+        onSettingsChange={() => {}}
+        roundLength={DEFAULT_SETTINGS.roundLength}
+        gateOnMiss={DEFAULT_SETTINGS.strictGate}
+        answerSounds={DEFAULT_SETTINGS.answerSounds}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Story/ }))
+
+    expect(await screen.findByText('First Contact')).toBeInTheDocument()
   })
 })

@@ -12,10 +12,16 @@ import { useT } from '@/i18n'
 interface ModeSelectProps {
   settings: Settings
   onSelectMode: (apply: Partial<Settings>) => void
+  onOpenStory: () => void
   onStart: () => void
 }
 
-export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps) {
+export function ModeSelect({
+  settings,
+  onSelectMode,
+  onOpenStory,
+  onStart,
+}: ModeSelectProps) {
   const t = useT()
   const active = activeModeId(settings)
 
@@ -53,7 +59,7 @@ export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps)
                 <span className="font-mono text-sm font-semibold text-text">
                   {t(mode.nameKey)}
                 </span>
-                {isActive && <span className="text-accent" aria-hidden="true">●</span>}
+                {isActive && <span className="text-accent" aria-hidden="true">✓</span>}
                 {!mode.available && (
                   <span className="rounded-full border border-border px-1.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-wider text-muted">
                     {t('action.soon')}
@@ -64,6 +70,19 @@ export function ModeSelect({ settings, onSelectMode, onStart }: ModeSelectProps)
             </button>
           )
         })}
+        <button
+          type="button"
+          aria-pressed={false}
+          onClick={onOpenStory}
+          className="flex flex-col items-start gap-1 rounded-xl border border-border p-3 text-left transition hover:border-accent/60"
+        >
+          <span className="flex w-full items-center justify-between gap-2">
+            <span className="font-mono text-sm font-semibold text-text">
+              {t('mode.story.name')}
+            </span>
+          </span>
+          <span className="text-xs text-muted">{t('mode.story.blurb')}</span>
+        </button>
       </div>
 
       <button

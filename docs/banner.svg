@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" role="img" aria-label="ditdah — learn Morse code by ear">
+  <rect x="6" y="6" width="1188" height="328" rx="26" fill="#0b0d10" stroke="#232830" stroke-width="2"/>
+  <text x="600" y="82" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="24" letter-spacing="9" fill="#8b929c">C W &#160; T R A I N E R</text>
+  <text x="600" y="208" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="122" font-weight="700">
+    <tspan fill="#e6e8ec">dit</tspan><tspan fill="#4ade80">dah</tspan>
+  </text>
+  <text x="600" y="268" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="29" fill="#8b929c">Learn Morse code by ear — fast, beautiful, sound-first.</text>
+  <path d="M150 305 H400 l18 -44 l34 88 l34 -100 l34 112 l26 -28 H1050" fill="none" stroke="#4ade80" stroke-width="3" stroke-opacity="0.30" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

@@ -9,16 +9,16 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#55 — Prompt-pool trainer foundation** on `feat/prompt-pool`: additive
-  `TrainerConfig.promptPool` for words/callsigns/custom text/QSO.
+- **#57 — Words mode** on `feat/words-mode`: common-word prompt pool wired
+  through Settings and the Words mode card.
 
 ## Blocked / waiting
 
-- #57–#60 are queued after prompt-pool lands.
+- #58–#60 are queued after Words lands.
 
 ## Next
 
-- After #55, implement #57 Words, #58 Callsigns, #59 Custom text, #60 QSO.
+- After #57, implement #58 Callsigns, #59 Custom text, #60 QSO.
 
 ## Open questions
 

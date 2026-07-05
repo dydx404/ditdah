@@ -4,6 +4,7 @@ import {
   trainerConfigForSettings,
   unlockedCharsForProgress,
 } from './trainerConfig'
+import { COMMON_WORD_POOL } from './promptPools'
 import type { Trainer } from '@/core/trainer/types'
 
 describe('trainerConfigForSettings', () => {
@@ -28,6 +29,19 @@ describe('trainerConfigForSettings', () => {
 
     expect(config.charset).toEqual(['A', 'B', '1'])
   })
+
+  it('passes a prompt pool when a pool-driven mode is active', () => {
+    const config = trainerConfigForSettings(
+      2,
+      {
+        ...DEFAULT_SETTINGS,
+        promptPool: COMMON_WORD_POOL,
+      },
+      789,
+    )
+
+    expect(config.promptPool).toEqual(COMMON_WORD_POOL)
+  })
 })
 
 describe('unlockedCharsForProgress', () => {
@@ -37,6 +51,18 @@ describe('unlockedCharsForProgress', () => {
     expect(
       unlockedCharsForProgress(['K', 'M', 'U'], trainer, {
         charSource: 'custom',
+        promptPool: [],
+      }),
+    ).toEqual(['K', 'M', 'U'])
+  })
+
+  it('preserves Koch unlock progress while a prompt-pool trainer is active', () => {
+    const trainer = fakeTrainer(['A', 'B', 'C'])
+
+    expect(
+      unlockedCharsForProgress(['K', 'M', 'U'], trainer, {
+        charSource: 'koch',
+        promptPool: ['CQ', '73'],
       }),
     ).toEqual(['K', 'M', 'U'])
   })
@@ -45,7 +71,10 @@ describe('unlockedCharsForProgress', () => {
     const trainer = fakeTrainer(['K', 'M', 'U', 'R'])
 
     expect(
-      unlockedCharsForProgress(['K', 'M'], trainer, { charSource: 'koch' }),
+      unlockedCharsForProgress(['K', 'M'], trainer, {
+        charSource: 'koch',
+        promptPool: [],
+      }),
     ).toEqual(['K', 'M', 'U', 'R'])
   })
 })

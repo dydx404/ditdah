@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PRACTICE_MODES, activeModeId } from './modes'
 import { DIGIT_CHARS } from './charset'
+import { COMMON_WORD_POOL } from './promptPools'
 
 describe('practice modes', () => {
   it('exposes the built modes plus greyed "soon" placeholders', () => {
@@ -12,6 +13,7 @@ describe('practice modes', () => {
       'learn',
       'groups',
       'free',
+      'words',
       'numbers',
     ])
     // Unavailable modes have no settings to apply (nothing to select yet).
@@ -26,6 +28,7 @@ describe('practice modes', () => {
         promptMode: 'single',
         charSource: 'koch',
         customCharset: ['K', 'M'],
+        promptPool: [],
       }),
     ).toBe('learn')
     expect(
@@ -33,6 +36,7 @@ describe('practice modes', () => {
         promptMode: 'group',
         charSource: 'koch',
         customCharset: ['K', 'M'],
+        promptPool: [],
       }),
     ).toBe('groups')
     expect(
@@ -40,6 +44,7 @@ describe('practice modes', () => {
         promptMode: 'single',
         charSource: 'custom',
         customCharset: ['K', 'M'],
+        promptPool: [],
       }),
     ).toBe('free')
     expect(
@@ -47,7 +52,16 @@ describe('practice modes', () => {
         promptMode: 'single',
         charSource: 'custom',
         customCharset: DIGIT_CHARS,
+        promptPool: [],
       }),
     ).toBe('numbers')
+    expect(
+      activeModeId({
+        promptMode: 'single',
+        charSource: 'koch',
+        customCharset: ['K', 'M'],
+        promptPool: COMMON_WORD_POOL,
+      }),
+    ).toBe('words')
   })
 })

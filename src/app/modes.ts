@@ -7,6 +7,7 @@
  * as they land, so the home screen grows without new plumbing.
  */
 import { DIGIT_CHARS } from './charset'
+import { COMMON_WORD_POOL, samePromptPool } from './promptPools'
 import type { Settings } from './settings'
 import type { MessageKey } from '@/i18n'
 
@@ -27,27 +28,32 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
     nameKey: 'mode.learn.name',
     blurbKey: 'mode.learn.blurb',
     available: true,
-    apply: { promptMode: 'single', charSource: 'koch' },
+    apply: { promptMode: 'single', charSource: 'koch', promptPool: [] },
   },
   {
     id: 'groups',
     nameKey: 'mode.groups.name',
     blurbKey: 'mode.groups.blurb',
     available: true,
-    apply: { promptMode: 'group', charSource: 'koch' },
+    apply: { promptMode: 'group', charSource: 'koch', promptPool: [] },
   },
   {
     id: 'free',
     nameKey: 'mode.free.name',
     blurbKey: 'mode.free.blurb',
     available: true,
-    apply: { charSource: 'custom' },
+    apply: { charSource: 'custom', promptPool: [] },
   },
   {
     id: 'words',
     nameKey: 'mode.words.name',
     blurbKey: 'mode.words.blurb',
-    available: false,
+    available: true,
+    apply: {
+      promptMode: 'single',
+      charSource: 'koch',
+      promptPool: COMMON_WORD_POOL,
+    },
   },
   {
     id: 'callsigns',
@@ -60,14 +66,21 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
     nameKey: 'mode.numbers.name',
     blurbKey: 'mode.numbers.blurb',
     available: true,
-    apply: { charSource: 'custom', customCharset: DIGIT_CHARS },
+    apply: { charSource: 'custom', customCharset: DIGIT_CHARS, promptPool: [] },
   },
 ]
 
 /** The mode the current settings correspond to (drives the home-screen highlight). */
 export function activeModeId(
-  settings: Pick<Settings, 'promptMode' | 'charSource' | 'customCharset'>,
+  settings: Pick<
+    Settings,
+    'promptMode' | 'charSource' | 'customCharset' | 'promptPool'
+  >,
 ): string {
+  if (settings.promptPool.length > 0) {
+    return samePromptPool(settings.promptPool, COMMON_WORD_POOL) ? 'words' : 'free'
+  }
+
   if (settings.charSource === 'custom') {
     return sameCharset(settings.customCharset, DIGIT_CHARS) ? 'numbers' : 'free'
   }

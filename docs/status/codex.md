@@ -9,6 +9,10 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
+- **#51 — Free training trainer charset support**
+  (`feat/free-training-core`, PR #52): additive `TrainerConfig.charset` plus core
+  prompt selection/unlock behavior for custom character sets. Local gates and
+  first PR verify passed; awaiting Benson merge.
 - **#53 — Dev debug answer mode**: PR #54 open on `feat/debug-answer-mode`;
   local gates passed, waiting on Benson review/merge.
 
@@ -29,6 +33,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- PR #50 is open for optional cloud accounts/sync; avoid App/settings/modes work
+  until it merges.
 - UI localization extraction merged as PR #47; local gates, PR CI, main CI, and
   Pages deploy were green. The first Pages deploy attempt hit GitHub's
   transient "try again later" failure and passed on rerun.

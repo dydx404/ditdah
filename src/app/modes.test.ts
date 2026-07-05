@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PRACTICE_MODES, activeModeId } from './modes'
 import { DIGIT_CHARS } from './charset'
-import { COMMON_WORD_POOL } from './promptPools'
+import { CALLSIGN_POOL, COMMON_WORD_POOL } from './promptPools'
 
 describe('practice modes', () => {
   it('exposes the built modes plus greyed "soon" placeholders', () => {
@@ -14,6 +14,7 @@ describe('practice modes', () => {
       'groups',
       'free',
       'words',
+      'callsigns',
       'numbers',
     ])
     // Unavailable modes have no settings to apply (nothing to select yet).
@@ -63,5 +64,13 @@ describe('practice modes', () => {
         promptPool: COMMON_WORD_POOL,
       }),
     ).toBe('words')
+    expect(
+      activeModeId({
+        promptMode: 'single',
+        charSource: 'koch',
+        customCharset: ['K', 'M'],
+        promptPool: CALLSIGN_POOL,
+      }),
+    ).toBe('callsigns')
   })
 })

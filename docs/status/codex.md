@@ -9,16 +9,16 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#57 — Words mode** on `feat/words-mode`: common-word prompt pool wired
-  through Settings and the Words mode card.
+- **#58 — Callsigns mode** on `feat/callsigns-mode`: generated callsign prompt
+  pool wired through the Callsigns mode card.
 
 ## Blocked / waiting
 
-- #58–#60 are queued after Words lands.
+- #59–#60 are queued after Callsigns lands.
 
 ## Next
 
-- After #57, implement #58 Callsigns, #59 Custom text, #60 QSO.
+- After #58, implement #59 Custom text, then #60 QSO.
 
 ## Open questions
 

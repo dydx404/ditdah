@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { ModeSelect } from './ModeSelect'
 import { DEFAULT_SETTINGS } from '@/app/settings'
 import { DIGIT_CHARS } from '@/app/charset'
-import { COMMON_WORD_POOL } from '@/app/promptPools'
+import { CALLSIGN_POOL, COMMON_WORD_POOL } from '@/app/promptPools'
 
 describe('ModeSelect', () => {
   it('highlights the active mode and starts on Start', () => {
@@ -62,9 +62,16 @@ describe('ModeSelect', () => {
       charSource: 'koch',
       promptPool: COMMON_WORD_POOL,
     })
+
+    fireEvent.click(screen.getByRole('button', { name: /Callsigns/ }))
+    expect(onSelectMode).toHaveBeenLastCalledWith({
+      promptMode: 'single',
+      charSource: 'koch',
+      promptPool: CALLSIGN_POOL,
+    })
   })
 
-  it('disables unbuilt modes', () => {
+  it('does not mark built modes as soon', () => {
     render(
       <ModeSelect
         settings={DEFAULT_SETTINGS}
@@ -72,6 +79,6 @@ describe('ModeSelect', () => {
         onStart={() => {}}
       />,
     )
-    expect(screen.getByRole('button', { name: /Callsigns/ })).toBeDisabled()
+    expect(screen.queryByText(/soon/i)).not.toBeInTheDocument()
   })
 })

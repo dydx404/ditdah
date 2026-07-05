@@ -95,7 +95,7 @@ export const STORY_CAMPAIGN: Campaign = {
         {
           id: 'close',
           speaker: 'you',
-          text: '73 SK',
+          text: '73 <SK>',
           subtitle: 'You close the contact.',
           mode: 'send',
         },
@@ -275,7 +275,7 @@ export const STORY_CAMPAIGN: Campaign = {
         {
           id: 'close',
           speaker: 'you',
-          text: '73 SK',
+          text: '73 <SK>',
           subtitle: 'You close the relay.',
           mode: 'send',
         },

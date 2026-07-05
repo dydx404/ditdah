@@ -244,7 +244,14 @@ export function scoreStoryText(
 }
 
 export function normalizeStoryInput(text: string): string {
-  return text.toUpperCase().trim()
+  // Prosigns are authored as `<SK>` but typed as their plain letters ("SK"),
+  // so scoring compares on the bracket-free form.
+  return text.replace(/[<>]/g, '').toUpperCase().trim()
+}
+
+/** Text as shown to the reader: prosign brackets removed (e.g. `73 <SK>` -> `73 SK`). */
+export function displayStoryText(text: string): string {
+  return text.replace(/[<>]/g, '')
 }
 
 export function storyLinePlayableText(line: StoryLine): string | null {

@@ -1,4 +1,4 @@
-import { symbolsFor } from '@/core/morse'
+import { symbolsFor, symbolsForProsign } from '@/core/morse'
 import type { Campaign, Chapter, StoryLine } from './types'
 
 export interface StoryContentIssue {
@@ -99,8 +99,15 @@ export function validateLine(
 }
 
 export function isSupportedStoryText(text: string): boolean {
-  return (
-    text.trim().length > 0 &&
-    [...text].every((char) => symbolsFor(char) !== undefined || /\s/.test(char))
+  if (text.trim().length === 0) {
+    return false
+  }
+  // Known prosign tokens (`<SK>`) are valid units; drop them, then any leftover
+  // `<`/`>` means an unknown or malformed prosign, which is unsupported.
+  const withoutProsigns = text.replace(/<([^>]*)>/g, (match, name: string) =>
+    symbolsForProsign(name) !== undefined ? ' ' : match,
+  )
+  return [...withoutProsigns].every(
+    (char) => symbolsFor(char) !== undefined || /\s/.test(char),
   )
 }

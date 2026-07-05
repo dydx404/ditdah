@@ -49,6 +49,22 @@ const MORSE_TABLE = {
   '-': [dah, dit, dit, dit, dit, dah],
 } as const satisfies Record<string, readonly MorseSymbol[]>
 
+/**
+ * Prosigns are two (or more) letters keyed as ONE symbol — no inter-character
+ * gap between the parts. Written with an overbar in books; here we author them
+ * in text as bracket tokens like `<SK>`. Getting these run together (not "S K")
+ * is what separates a real CW tool from a toy, so the renderer treats a known
+ * prosign token as a single unit. Values are the concatenated element streams.
+ */
+const PROSIGN_TABLE = {
+  AR: [dit, dah, dit, dah, dit], // end of message (+)
+  AS: [dit, dah, dit, dit, dit], // wait / stand by
+  BT: [dah, dit, dit, dit, dah], // new section / break (=)
+  KA: [dah, dit, dah, dit, dah], // attention / start of message
+  KN: [dah, dit, dah, dah, dit], // go ahead, named station only
+  SK: [dit, dit, dit, dah, dit, dah], // end of contact (VA)
+} as const satisfies Record<string, readonly MorseSymbol[]>
+
 export const KOCH_ORDER = [
   'K',
   'M',
@@ -104,4 +120,23 @@ export function symbolsFor(char: string): readonly MorseSymbol[] | undefined {
 
 function hasMorseEntry(char: string): char is keyof typeof MORSE_TABLE {
   return Object.hasOwn(MORSE_TABLE, char)
+}
+
+/** Known prosign names (uppercase, without brackets), e.g. 'SK', 'AR'. */
+export const PROSIGN_NAMES: readonly string[] = Object.keys(PROSIGN_TABLE)
+
+/**
+ * The run-together symbol sequence for a prosign name (case-insensitive),
+ * or undefined if it is not a known prosign. Example: 'SK' -> the six elements
+ * keyed with no inter-character gaps.
+ */
+export function symbolsForProsign(
+  name: string,
+): readonly MorseSymbol[] | undefined {
+  const normalized = name.toUpperCase()
+  return hasProsignEntry(normalized) ? PROSIGN_TABLE[normalized] : undefined
+}
+
+function hasProsignEntry(name: string): name is keyof typeof PROSIGN_TABLE {
+  return Object.hasOwn(PROSIGN_TABLE, name)
 }

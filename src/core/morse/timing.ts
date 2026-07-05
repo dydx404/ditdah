@@ -1,4 +1,4 @@
-import { symbolsFor } from './table'
+import { symbolsFor, symbolsForProsign } from './table'
 import type { KeyingElement, MorseSymbol, TimingConfig } from './types'
 
 const INTRA_CHARACTER_UNITS = 1
@@ -19,35 +19,65 @@ export function renderToElements(
   const spacingUnitMs = farnsworthSpacingUnitMs(timing)
   const elements: KeyingElement[] = []
   let pendingGap: PendingGap | undefined
+  let index = 0
 
-  for (const char of text) {
+  while (index < text.length) {
+    const char = text[index]
+
     if (isWhitespace(char)) {
       if (elements.length > 0) {
         pendingGap = 'word'
       }
+      index += 1
+      continue
+    }
+
+    // A prosign token like `<SK>` keys its letters run together as one symbol.
+    if (char === '<') {
+      const close = text.indexOf('>', index + 1)
+      if (close !== -1) {
+        const symbols = symbolsForProsign(text.slice(index + 1, close))
+        index = close + 1
+        if (symbols !== undefined) {
+          pushGap(elements, pendingGap, spacingUnitMs)
+          appendSymbols(elements, symbols, unitMs)
+          pendingGap = 'character'
+        }
+        continue
+      }
+      // No closing '>': treat '<' as an unsupported character and move on.
+      index += 1
       continue
     }
 
     const symbols = symbolsFor(char)
+    index += 1
     if (symbols === undefined) {
       continue
     }
 
-    if (elements.length > 0 && pendingGap !== undefined) {
-      elements.push({
-        on: false,
-        ms:
-          pendingGap === 'word'
-            ? WORD_GAP_UNITS * spacingUnitMs
-            : INTER_CHARACTER_UNITS * spacingUnitMs,
-      })
-    }
-
+    pushGap(elements, pendingGap, spacingUnitMs)
     appendSymbols(elements, symbols, unitMs)
     pendingGap = 'character'
   }
 
   return elements
+}
+
+function pushGap(
+  elements: KeyingElement[],
+  pendingGap: PendingGap | undefined,
+  spacingUnitMs: number,
+): void {
+  if (elements.length > 0 && pendingGap !== undefined) {
+    elements.push({
+      on: false,
+      ms:
+        pendingGap === 'word'
+          ? WORD_GAP_UNITS * spacingUnitMs
+          : INTER_CHARACTER_UNITS * spacingUnitMs,
+    })
+  }
 }
 
 function appendSymbols(

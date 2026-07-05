@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { STORY_CAMPAIGN, validateCampaign } from '.'
+import { isSupportedStoryText, STORY_CAMPAIGN, validateCampaign } from '.'
 
 describe('story content', () => {
   it('ships a three-chapter campaign with supported CW text', () => {
@@ -18,6 +18,13 @@ describe('story content', () => {
       expect(chapter.lines.some((line) => line.mode === 'send')).toBe(true)
     }
     expect(validateCampaign(STORY_CAMPAIGN)).toEqual([])
+  })
+
+  it('accepts known prosign tokens but rejects unknown or malformed ones', () => {
+    expect(isSupportedStoryText('73 <SK>')).toBe(true)
+    expect(isSupportedStoryText('<AR>')).toBe(true)
+    expect(isSupportedStoryText('<XY>')).toBe(false)
+    expect(isSupportedStoryText('73 <SK')).toBe(false)
   })
 
   it('flags unlock references to unknown chapters', () => {

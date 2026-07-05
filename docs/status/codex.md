@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **Roadmap/status close-out** on `docs/advanced-mode-status`: mark the
-  completed advanced-mode queue and list proposed next bets.
+- **#71 — Story Mode foundation** on `feat/story-foundation`: typed story
+  content, First Contact chapter, and pure story session engine.
 
 ## Blocked / waiting
 
@@ -18,8 +18,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- Wait for Benson to pick/spec the next issue. Candidate bets: QSO v2 stateful
-  contact, optional QSB/QRN realism, speed builder, sending mode.
+- After #71, build the Story UI shell as the next slice.
 
 ## Open questions
 

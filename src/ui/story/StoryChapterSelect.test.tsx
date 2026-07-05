@@ -20,7 +20,7 @@ describe('StoryChapterSelect', () => {
     expect(screen.getByText('Storm Watch')).toBeInTheDocument()
     expect(screen.getByText('Harbor Relay')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /First Contact/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^First Contact/ }))
 
     expect(onStartChapter).toHaveBeenCalledWith(STORY_CAMPAIGN.chapters[0])
   })
@@ -35,10 +35,12 @@ describe('StoryChapterSelect', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: /Storm Watch/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Storm Watch/ }))
 
-    expect(screen.getByRole('button', { name: /Storm Watch/ })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /Harbor Relay/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Storm Watch/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Harbor Relay/ })).toBeDisabled()
+    expect(screen.getByText('Complete First Contact')).toBeInTheDocument()
+    expect(screen.getByText('Complete Storm Watch')).toBeInTheDocument()
     expect(onStartChapter).not.toHaveBeenCalled()
   })
 
@@ -65,11 +67,13 @@ describe('StoryChapterSelect', () => {
     expect(screen.getByText('Best 92%')).toBeInTheDocument()
     expect(screen.getByText('2 plays')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /Storm Watch/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Storm Watch/ }))
     expect(onStartChapter).toHaveBeenCalledWith(STORY_CAMPAIGN.chapters[1])
-    expect(screen.getByRole('button', { name: /Harbor Relay/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Harbor Relay/ })).toBeDisabled()
+    expect(screen.queryByText('Complete First Contact')).not.toBeInTheDocument()
+    expect(screen.getByText('Complete Storm Watch')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /First Contact/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^First Contact/ }))
     expect(onStartChapter).toHaveBeenLastCalledWith(STORY_CAMPAIGN.chapters[0])
 
     rerender(
@@ -96,7 +100,8 @@ describe('StoryChapterSelect', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: /Harbor Relay/ }))
+    expect(screen.queryByText('Complete Storm Watch')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /^Harbor Relay/ }))
     expect(onStartChapter).toHaveBeenLastCalledWith(STORY_CAMPAIGN.chapters[2])
   })
 })

@@ -139,6 +139,7 @@ export const en = {
   'story.chapter.completed': 'Completed',
   'story.chapter.best': 'Best {percent}%',
   'story.chapter.plays': '{count} plays',
+  'story.chapter.unlockAfter': 'Complete {chapter}',
   'story.progress': '{current} / {total}',
   'story.incoming': 'Incoming',
   'story.retry': 'Try again',

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CALLSIGN_POOL,
   COMMON_WORD_POOL,
+  generateCallsignPool,
   normalizePromptPool,
   samePromptPool,
 } from './promptPools'
@@ -18,6 +20,19 @@ describe('prompt pools', () => {
         [...word].every((char) => symbolsFor(char) !== undefined),
       ),
     ).toBe(true)
+  })
+
+  it('generates realistic callsign prompts', () => {
+    expect(CALLSIGN_POOL.length).toBeGreaterThanOrEqual(200)
+    expect(CALLSIGN_POOL).toContain('W1AW')
+    expect(CALLSIGN_POOL).toContain('G4ABC')
+    expect(CALLSIGN_POOL).toContain('VK2XYZ')
+    expect(
+      CALLSIGN_POOL.every((call) =>
+        /^[A-Z]{1,3}[0-9][A-Z]{2,3}$/.test(call),
+      ),
+    ).toBe(true)
+    expect(generateCallsignPool(12)).toHaveLength(12)
   })
 
   it('normalizes prompt pools and drops unsupported entries', () => {

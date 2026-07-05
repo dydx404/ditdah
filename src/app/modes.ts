@@ -7,7 +7,7 @@
  * as they land, so the home screen grows without new plumbing.
  */
 import { DIGIT_CHARS } from './charset'
-import { COMMON_WORD_POOL, samePromptPool } from './promptPools'
+import { CALLSIGN_POOL, COMMON_WORD_POOL, samePromptPool } from './promptPools'
 import type { Settings } from './settings'
 import type { MessageKey } from '@/i18n'
 
@@ -59,7 +59,12 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
     id: 'callsigns',
     nameKey: 'mode.callsigns.name',
     blurbKey: 'mode.callsigns.blurb',
-    available: false,
+    available: true,
+    apply: {
+      promptMode: 'single',
+      charSource: 'koch',
+      promptPool: CALLSIGN_POOL,
+    },
   },
   {
     id: 'numbers',
@@ -78,7 +83,9 @@ export function activeModeId(
   >,
 ): string {
   if (settings.promptPool.length > 0) {
-    return samePromptPool(settings.promptPool, COMMON_WORD_POOL) ? 'words' : 'free'
+    if (samePromptPool(settings.promptPool, COMMON_WORD_POOL)) return 'words'
+    if (samePromptPool(settings.promptPool, CALLSIGN_POOL)) return 'callsigns'
+    return 'free'
   }
 
   if (settings.charSource === 'custom') {

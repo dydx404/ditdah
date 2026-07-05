@@ -298,6 +298,84 @@ const RAW_COMMON_WORDS = [
 
 export const COMMON_WORD_POOL = normalizePromptPool(RAW_COMMON_WORDS)
 
+const CALLSIGN_PREFIXES = [
+  'K',
+  'N',
+  'W',
+  'AA',
+  'VE',
+  'VA',
+  'G',
+  'M',
+  'F',
+  'DL',
+  'DJ',
+  'JA',
+  'JE',
+  'VK',
+  'ZL',
+  'ZS',
+  'PY',
+  'LU',
+  'I',
+  'EA',
+  'SM',
+  'OH',
+  'LA',
+  'PA',
+  'ON',
+  'HB',
+  'OE',
+  'OK',
+  'SP',
+  'CT',
+] as const
+
+const CALLSIGN_SUFFIXES = [
+  'AW',
+  'ABC',
+  'XYZ',
+  'DX',
+  'CW',
+  'QRP',
+  'HAM',
+  'ANT',
+  'LOG',
+  'KEY',
+  'RF',
+  'HF',
+  'VHF',
+  'UHF',
+  'SK',
+  'AR',
+  'BK',
+  'TU',
+  'FB',
+  'OP',
+  'RST',
+  'PWR',
+  'QTH',
+  'WX',
+  'NET',
+  'RIG',
+] as const
+
+export const CALLSIGN_POOL = generateCallsignPool()
+
+export function generateCallsignPool(limit = 240): string[] {
+  const prompts = ['W1AW', 'G4ABC', 'VK2XYZ']
+
+  for (const prefix of CALLSIGN_PREFIXES) {
+    for (let digit = 0; digit <= 9; digit += 1) {
+      for (const suffix of CALLSIGN_SUFFIXES) {
+        prompts.push(`${prefix}${digit}${suffix}`)
+      }
+    }
+  }
+
+  return normalizePromptPool(prompts).slice(0, limit)
+}
+
 export function normalizePromptPool(value: unknown): string[] {
   if (!Array.isArray(value)) return []
 

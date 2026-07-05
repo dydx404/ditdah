@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#53 — Dev debug answer mode** on `feat/debug-answer-mode`: hidden
-  `?debug=always-correct` local/dev helper for rapid practice-loop debugging.
+- **#53 — Dev debug answer mode**: PR #54 open on `feat/debug-answer-mode`;
+  local gates passed, waiting on Benson review/merge.
 
 ## Blocked / waiting
 

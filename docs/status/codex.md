@@ -9,8 +9,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#87 — Story Mode locked chapter hints** on `feat/story-lock-hints`:
-  compact unlock requirements on locked chapter cards.
+- Nothing in flight.
 
 ## Blocked / waiting
 
@@ -18,9 +17,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #87, continue Story Mode one slice at a time: more chapters, better
-  mission feel, or a deliberate synced progress schema issue if Benson wants
-  cross-device story state.
+- Continue Story Mode one slice at a time: more chapters, better mission feel,
+  or a deliberate synced progress schema issue if Benson wants cross-device
+  story state.
 
 ## Open questions
 
@@ -28,6 +27,10 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- Story Mode foundation, UI shell, local progress, chapter unlocks, three
+  chapters, completion actions, and locked-chapter hints are merged through
+  PR #88. Main CI passed; Pages needed a manual workflow_dispatch after two
+  transient "Deployment failed, try again later" rerun failures and then passed.
 - #55-#60 advanced-mode queue is merged on main through PR #68. Main CI and
   Pages were green after #68.
 - #50 cloud sync and #52 charset core are merged on main. #52 Pages deploy hit

@@ -9,8 +9,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- #91 guidebook: researched beginner-to-proficient CW learner guide, README
-  entry point, and status update on branch `docs/cw-guidebook`.
+- Nothing in flight.
 
 ## Blocked / waiting
 
@@ -28,6 +27,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
+- #91 guidebook merged as PR #92: added `docs/guidebook/README.md`, linked it
+  from README, and kept the material sound-first with external resource links.
 - Story Mode foundation, UI shell, local progress, chapter unlocks, three
   chapters, completion actions, and locked-chapter hints are merged through
   PR #88. Main CI passed; Pages needed a manual workflow_dispatch after two

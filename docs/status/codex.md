@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#79 — Story Mode progress** on `feat/story-progress`: local chapter
-  completion, best score, and completed chapter display.
+- **#81 — Story Mode chapter progression** on `feat/story-chapter-progression`:
+  second chapter content and progress-driven chapter unlocks.
 
 ## Blocked / waiting
 
@@ -18,8 +18,9 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #79, continue Story Mode one slice at a time: more chapter content or
-  a deliberate synced progress schema issue if Benson wants cross-device story state.
+- After #81, continue Story Mode one slice at a time: more chapters, better
+  mission feel, or a deliberate synced progress schema issue if Benson wants
+  cross-device story state.
 
 ## Open questions
 

@@ -5,6 +5,8 @@ import type { ToneEngine } from '@/core/audio/types'
 import type { Chapter } from '@/content/stories'
 import {
   createStorySession,
+  displayStoryText,
+  normalizeStoryInput,
   storyLinePlayableText,
   type StorySession,
   type StorySessionState,
@@ -44,7 +46,9 @@ export function StoryScreen({
   const [state, setState] = useState<StorySessionState>(() => session.state())
   const [buffer, setBuffer] = useState('')
   const activeLine = state.activeLine
-  const expectedLength = activeLine?.text.length ?? 0
+  const expectedLength = activeLine
+    ? normalizeStoryInput(activeLine.text).length
+    : 0
   const canType =
     state.phase === 'copy' ||
     state.phase === 'retry' ||
@@ -192,7 +196,7 @@ export function StoryScreen({
             phase={state.phase}
             lineId={activeLine.id}
             speaker={speakerLabel(chapter, activeLine.speaker, t('story.you'))}
-            text={activeLine.text}
+            text={displayStoryText(activeLine.text)}
             subtitle={activeLine.subtitle}
             lastAccuracy={state.lastAttempt?.accuracy ?? null}
           />
@@ -308,7 +312,9 @@ function TranscriptBubble({
       <p className="font-mono text-xs uppercase tracking-widest text-muted">
         {speaker}
       </p>
-      <p className="mt-1 font-mono text-lg text-text">{entry.line.text}</p>
+      <p className="mt-1 font-mono text-lg text-text">
+        {displayStoryText(entry.line.text)}
+      </p>
       {entry.line.subtitle && (
         <p className="mt-1 text-sm text-muted">{entry.line.subtitle}</p>
       )}

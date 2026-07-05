@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { STORY_CAMPAIGN } from '@/content/stories'
 import {
   createStorySession,
+  displayStoryText,
   scoreStoryText,
   storyLinePlayableText,
 } from './storySession'
@@ -16,6 +17,16 @@ describe('story session', () => {
       received: 'CQ XQ',
       accuracy: 0.8,
     })
+  })
+
+  it('scores a prosign send line by its typed letters', () => {
+    // Content authors the prosign as `<SK>`; the operator types "SK".
+    expect(scoreStoryText('73 <SK>', '73 SK')).toMatchObject({
+      correct: true,
+      expected: '73 SK',
+      received: '73 SK',
+    })
+    expect(displayStoryText('73 <SK>')).toBe('73 SK')
   })
 
   it('starts on the first line and advances narration', () => {

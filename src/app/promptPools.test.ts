@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   CALLSIGN_POOL,
   COMMON_WORD_POOL,
+  QSO_POOL,
   generateCallsignPool,
   normalizePromptPool,
   samePromptPool,
@@ -34,6 +35,23 @@ describe('prompt pools', () => {
       ),
     ).toBe(true)
     expect(generateCallsignPool(12)).toHaveLength(12)
+  })
+
+  it('bundles curated QSO exchange snippets', () => {
+    expect(QSO_POOL.length).toBeGreaterThanOrEqual(70)
+    expect(QSO_POOL).toContain('CQ CQ DE W1AW')
+    expect(QSO_POOL).toContain('RST 599')
+    expect(QSO_POOL).toContain('73 SK')
+    expect(QSO_POOL.every((prompt) => prompt === prompt.toUpperCase())).toBe(
+      true,
+    )
+    expect(
+      QSO_POOL.every((prompt) =>
+        [...prompt].every(
+          (char) => symbolsFor(char) !== undefined || /\s/.test(char),
+        ),
+      ),
+    ).toBe(true)
   })
 
   it('normalizes prompt pools and drops unsupported entries', () => {

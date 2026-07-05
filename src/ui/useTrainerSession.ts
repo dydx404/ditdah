@@ -25,7 +25,7 @@
  * a pure per-answer scorer. Trainer and ToneEngine are injected for testability.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { renderToElements } from '@/core/morse'
+import { renderToElements, symbolsFor } from '@/core/morse'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
 import { playCue, type Cue } from './cues'
@@ -73,6 +73,8 @@ export interface UseTrainerSessionOptions {
   sounds?: boolean
   /** Hidden dev helper for rapid loop debugging; normal scoring is unchanged by default. */
   debugAnswerMode?: DebugAnswerMode
+  /** Some pool prompts contain word spaces; keep normal groups unchanged. */
+  allowSpaceInGroups?: boolean
   /** Called after each scored answer — the app persists progress here. */
   onAnswered?: (result: AnswerResult) => void
   /** Called once when a round finishes — the app can log it to history. */
@@ -120,6 +122,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
   const gateOnMiss = opts.gateOnMiss ?? true
   const sounds = opts.sounds ?? true
   const debugAnswerMode = opts.debugAnswerMode ?? 'normal'
+  const allowSpaceInGroups = opts.allowSpaceInGroups ?? false
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [lastResult, setLastResult] = useState<AnswerResult | null>(null)
@@ -244,6 +247,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
         { expected: result.expected, correct: result.correct },
       ]
       for (const c of tally) {
+        if (symbolsFor(c.expected) === undefined) continue
         const prev = rs.get(c.expected) ?? { attempts: 0, correct: 0 }
         rs.set(c.expected, {
           attempts: prev.attempts + 1,
@@ -372,14 +376,25 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       } else if (e.key === 'Backspace') {
         e.preventDefault()
         backspace()
-      } else if (VALID_KEY.test(e.key)) {
+      } else if (
+        VALID_KEY.test(e.key) ||
+        (allowSpaceInGroups && e.key === ' ')
+      ) {
         e.preventDefault()
         typeChar(e.key)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, handleAnswer, handleRetry, typeChar, backspace, submitGroup])
+  }, [
+    phase,
+    handleAnswer,
+    handleRetry,
+    typeChar,
+    backspace,
+    submitGroup,
+    allowSpaceInGroups,
+  ])
 
   // The trainer instance is swapped when prompt mode/size changes (App recreates
   // it). Reset to idle so a stale in-flight prompt can't submit to a new trainer.

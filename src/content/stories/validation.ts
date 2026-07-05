@@ -9,6 +9,7 @@ export interface StoryContentIssue {
 export function validateCampaign(campaign: Campaign): StoryContentIssue[] {
   const issues: StoryContentIssue[] = []
   const chapterIds = new Set<string>()
+  const allChapterIds = new Set(campaign.chapters.map((chapter) => chapter.id))
 
   if (campaign.id.trim().length === 0) {
     issues.push({ path: 'campaign.id', message: 'Campaign id is required' })
@@ -20,6 +21,21 @@ export function validateCampaign(campaign: Campaign): StoryContentIssue[] {
       issues.push({ path: `${chapterPath}.id`, message: 'Chapter id is duplicated' })
     }
     chapterIds.add(chapter.id)
+    if (
+      chapter.unlock?.previousChapterId !== undefined &&
+      !allChapterIds.has(chapter.unlock.previousChapterId)
+    ) {
+      issues.push({
+        path: `${chapterPath}.unlock.previousChapterId`,
+        message: 'Chapter unlock references an unknown chapter',
+      })
+    }
+    if (chapter.unlock?.previousChapterId === chapter.id) {
+      issues.push({
+        path: `${chapterPath}.unlock.previousChapterId`,
+        message: 'Chapter cannot unlock from itself',
+      })
+    }
     issues.push(...validateChapter(chapter, chapterPath))
   })
 

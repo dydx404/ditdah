@@ -17,13 +17,31 @@ describe('StoryChapterSelect', () => {
 
     expect(screen.getByText('Story Mode')).toBeInTheDocument()
     expect(screen.getByText('First Contact')).toBeInTheDocument()
+    expect(screen.getByText('Storm Watch')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /First Contact/ }))
 
     expect(onStartChapter).toHaveBeenCalledWith(STORY_CAMPAIGN.chapters[0])
   })
 
-  it('shows completed chapter progress', () => {
+  it('locks the follow-up chapter until First Contact is complete', () => {
+    const onStartChapter = vi.fn()
+    render(
+      <StoryChapterSelect
+        campaign={STORY_CAMPAIGN}
+        onBack={() => {}}
+        onStartChapter={onStartChapter}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Storm Watch/ }))
+
+    expect(screen.getByRole('button', { name: /Storm Watch/ })).toBeDisabled()
+    expect(onStartChapter).not.toHaveBeenCalled()
+  })
+
+  it('unlocks the follow-up chapter after First Contact progress exists', () => {
+    const onStartChapter = vi.fn()
     render(
       <StoryChapterSelect
         campaign={STORY_CAMPAIGN}
@@ -37,12 +55,18 @@ describe('StoryChapterSelect', () => {
           },
         ]}
         onBack={() => {}}
-        onStartChapter={() => {}}
+        onStartChapter={onStartChapter}
       />,
     )
 
     expect(screen.getByText('Completed')).toBeInTheDocument()
     expect(screen.getByText('Best 92%')).toBeInTheDocument()
     expect(screen.getByText('2 plays')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Storm Watch/ }))
+    expect(onStartChapter).toHaveBeenCalledWith(STORY_CAMPAIGN.chapters[1])
+
+    fireEvent.click(screen.getByRole('button', { name: /First Contact/ }))
+    expect(onStartChapter).toHaveBeenLastCalledWith(STORY_CAMPAIGN.chapters[0])
   })
 })

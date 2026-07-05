@@ -186,6 +186,7 @@ function App() {
   // them rebuilds it. Fold the outgoing session's stats into base first, or a
   // subsequent save would drop everything copied before the switch.
   const customCharsetKey = settings.customCharset.join('')
+  const promptPoolKey = settings.promptPool.join('\u0000')
   useEffect(() => {
     const outgoing = trainerRef.current
     if (!outgoing) return
@@ -210,6 +211,7 @@ function App() {
     settings.groupSize,
     settings.charSource,
     customCharsetKey,
+    promptPoolKey,
     installTrainer,
     schedulePush,
   ])

@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { ModeSelect } from './ModeSelect'
 import { DEFAULT_SETTINGS } from '@/app/settings'
 import { DIGIT_CHARS } from '@/app/charset'
+import { COMMON_WORD_POOL } from '@/app/promptPools'
 
 describe('ModeSelect', () => {
   it('highlights the active mode and starts on Start', () => {
@@ -39,15 +40,27 @@ describe('ModeSelect', () => {
     expect(onSelectMode).toHaveBeenCalledWith({
       promptMode: 'group',
       charSource: 'koch',
+      promptPool: [],
     })
 
     fireEvent.click(screen.getByRole('button', { name: /Free training/ }))
-    expect(onSelectMode).toHaveBeenLastCalledWith({ charSource: 'custom' })
+    expect(onSelectMode).toHaveBeenLastCalledWith({
+      charSource: 'custom',
+      promptPool: [],
+    })
 
     fireEvent.click(screen.getByRole('button', { name: /Numbers/ }))
     expect(onSelectMode).toHaveBeenLastCalledWith({
       charSource: 'custom',
       customCharset: DIGIT_CHARS,
+      promptPool: [],
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Words/ }))
+    expect(onSelectMode).toHaveBeenLastCalledWith({
+      promptMode: 'single',
+      charSource: 'koch',
+      promptPool: COMMON_WORD_POOL,
     })
   })
 
@@ -59,6 +72,6 @@ describe('ModeSelect', () => {
         onStart={() => {}}
       />,
     )
-    expect(screen.getByRole('button', { name: /Words/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Callsigns/ })).toBeDisabled()
   })
 })

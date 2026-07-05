@@ -4,6 +4,7 @@ import {
   normalizeCustomCharset,
   type CharSource,
 } from './charset'
+import { normalizePromptPool } from './promptPools'
 import { detectLocale, isLocale, type Locale } from '@/i18n/messages'
 
 const SETTINGS_KEY = 'ditdah:settings'
@@ -27,6 +28,8 @@ export interface Settings {
   readonly charSource: CharSource
   /** Explicit character set for free training mode. */
   readonly customCharset: readonly string[]
+  /** Explicit prompt strings for pool-driven modes such as words. */
+  readonly promptPool: readonly string[]
   /** Keep a missed prompt gated until the learner echoes it correctly. */
   readonly strictGate: boolean
   /** Play short correct/wrong UI answer cues. */
@@ -48,6 +51,7 @@ export const DEFAULT_SETTINGS: Settings = {
   groupSize: 5,
   charSource: 'koch',
   customCharset: DEFAULT_CUSTOM_CHARSET,
+  promptPool: [],
   strictGate: true,
   answerSounds: true,
   showPatterns: false,
@@ -129,6 +133,7 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
     ),
     charSource: value.charSource === 'custom' ? 'custom' : 'koch',
     customCharset: normalizeCustomCharset(value.customCharset),
+    promptPool: normalizePromptPool(value.promptPool),
     strictGate: value.strictGate !== false,
     answerSounds: value.answerSounds !== false,
     showPatterns: value.showPatterns === true,

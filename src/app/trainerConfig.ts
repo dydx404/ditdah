@@ -22,6 +22,7 @@ export function trainerConfigForSettings(
     promptMode: settings.promptMode,
     groupSize: settings.groupSize,
     seed,
+    ...(settings.promptPool.length > 0 ? { promptPool: settings.promptPool } : {}),
     ...(settings.charSource === 'custom'
       ? { charset: settings.customCharset }
       : {}),
@@ -31,13 +32,13 @@ export function trainerConfigForSettings(
 export function unlockedCharsForProgress(
   baseUnlocked: readonly string[] | undefined,
   trainer: Trainer | null,
-  settings: Pick<Settings, 'charSource'>,
+  settings: Pick<Settings, 'charSource' | 'promptPool'>,
 ): readonly string[] {
   const fallback = baseUnlocked?.length
     ? baseUnlocked
     : KOCH_ORDER.slice(0, DEFAULT_TRAINER.initialUnlockCount)
 
-  return settings.charSource === 'custom'
+  return settings.promptPool.length > 0 || settings.charSource === 'custom'
     ? fallback
     : (trainer?.unlockedChars() ?? fallback)
 }

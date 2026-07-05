@@ -12,6 +12,7 @@ import {
 } from './settings'
 import { DEFAULT_CUSTOM_CHARSET } from './charset'
 import { SettingsPanel } from '@/ui/SettingsPanel'
+import { COMMON_WORD_POOL } from './promptPools'
 
 const SETTINGS_KEY = 'ditdah:settings'
 
@@ -44,6 +45,7 @@ describe('settings persistence', () => {
       groupSize: 4,
       charSource: 'custom',
       customCharset: ['A', 'B', '1'],
+      promptPool: ['CQ', '73'],
       strictGate: false,
       answerSounds: false,
       showPatterns: true,
@@ -77,6 +79,7 @@ describe('settings persistence', () => {
       groupSize: 5,
       charSource: 'koch',
       customCharset: DEFAULT_CUSTOM_CHARSET,
+      promptPool: [],
       strictGate: true,
       answerSounds: true,
       showPatterns: false,
@@ -120,6 +123,20 @@ describe('settings persistence', () => {
         customCharset: [],
       }).customCharset,
     ).toEqual(DEFAULT_CUSTOM_CHARSET)
+  })
+
+  it('defaults and validates prompt pools', () => {
+    expect(normalizeSettings({}).promptPool).toEqual([])
+    expect(
+      normalizeSettings({
+        promptPool: [' cq ', 'CQ', '73', '~'],
+      }).promptPool,
+    ).toEqual(['CQ', '73'])
+    expect(
+      normalizeSettings({
+        promptPool: COMMON_WORD_POOL,
+      }).promptPool,
+    ).toEqual(COMMON_WORD_POOL)
   })
 
   it('defaults showPatterns off and coerces non-booleans to false', () => {

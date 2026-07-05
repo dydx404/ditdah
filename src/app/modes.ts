@@ -26,14 +26,21 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
     nameKey: 'mode.learn.name',
     blurbKey: 'mode.learn.blurb',
     available: true,
-    apply: { promptMode: 'single' },
+    apply: { promptMode: 'single', charSource: 'koch' },
   },
   {
     id: 'groups',
     nameKey: 'mode.groups.name',
     blurbKey: 'mode.groups.blurb',
     available: true,
-    apply: { promptMode: 'group' },
+    apply: { promptMode: 'group', charSource: 'koch' },
+  },
+  {
+    id: 'free',
+    nameKey: 'mode.free.name',
+    blurbKey: 'mode.free.blurb',
+    available: true,
+    apply: { charSource: 'custom' },
   },
   {
     id: 'words',
@@ -56,6 +63,9 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
 ]
 
 /** The mode the current settings correspond to (drives the home-screen highlight). */
-export function activeModeId(settings: Pick<Settings, 'promptMode'>): string {
+export function activeModeId(
+  settings: Pick<Settings, 'promptMode' | 'charSource'>,
+): string {
+  if (settings.charSource === 'custom') return 'free'
   return settings.promptMode === 'group' ? 'groups' : 'learn'
 }

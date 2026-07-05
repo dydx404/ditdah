@@ -9,23 +9,18 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#51 — Free training trainer charset support**
-  (`feat/free-training-core`, PR #52): additive `TrainerConfig.charset` plus core
-  prompt selection/unlock behavior for custom character sets. Local gates and
-  first PR verify passed; awaiting Benson merge.
-- **#53 — Dev debug answer mode**: PR #54 open on `feat/debug-answer-mode`;
-  local gates passed, waiting on Benson review/merge.
+- **#61 — Free-training UI** on `feat/free-training-ui`: custom charset
+  settings, Free training mode card, picker presets, and trainer charset
+  plumbing after #52 landed.
 
 ## Blocked / waiting
 
-- **#21 — Scope account and cloud sync v0** is open as `needs-spec`; wait for
-  Benson's product/back-end decision before implementing accounts.
-- No open ready issues remain. For Phase 3 work, open a short specced issue and
-  wait for Benson's thumbs-up before coding.
+- #55–#60 are the advanced-mode queue after free-training UI.
 
 ## Next
 
-- Shape the next retention/depth issue once Benson confirms priority.
+- After #61, implement #56 Numbers, then #55 prompt-pool foundation, then
+  #57–#60 in order.
 
 ## Open questions
 
@@ -33,13 +28,11 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Notes
 
-- PR #50 is open for optional cloud accounts/sync; avoid App/settings/modes work
-  until it merges.
+- #50 cloud sync and #52 charset core are merged on main. #52 Pages deploy hit
+  GitHub's transient "try again later" once and passed on rerun.
 - UI localization extraction merged as PR #47; local gates, PR CI, main CI, and
   Pages deploy were green. The first Pages deploy attempt hit GitHub's
   transient "try again later" failure and passed on rerun.
-- Open PRs at this snapshot: #50 cloud sync and #52 free-training core. Avoid
-  building on those surfaces until Benson merges them.
 - PR #46 added the i18n system; future extraction work should consume it, not
   alter the mechanism.
 - #34 merged as PR #40; local gates, PR CI, main CI, and Pages deploy were green.

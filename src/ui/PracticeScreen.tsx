@@ -35,6 +35,11 @@ import { readDebugAnswerMode } from './debug'
 import { STORY_CAMPAIGN, type Chapter } from '@/content/stories'
 import { StoryChapterSelect } from './story/StoryChapterSelect'
 import { StoryScreen } from './story/StoryScreen'
+import {
+  EMPTY_STORY_PROGRESS,
+  type StoryProgress,
+} from '@/app/storyProgress'
+import type { StoryChapterSummary } from '@/app/storySession'
 
 interface PracticeScreenProps {
   trainer: Trainer
@@ -60,6 +65,10 @@ interface PracticeScreenProps {
   /** Called once when a round finishes (the app persists history). */
   onRoundComplete?: (summary: RoundSummary) => void
   onClearHistory?: () => void
+  /** Local Story Mode progress, intentionally separate from frozen core storage. */
+  storyProgress?: StoryProgress
+  /** Called once when a story chapter completes. */
+  onStoryComplete?: (chapterId: string, summary: StoryChapterSummary) => void
 }
 
 export function PracticeScreen({
@@ -79,6 +88,8 @@ export function PracticeScreen({
   onAnswered,
   onRoundComplete,
   onClearHistory,
+  storyProgress = EMPTY_STORY_PROGRESS,
+  onStoryComplete,
 }: PracticeScreenProps) {
   const t = useT()
   const debugAnswerMode = readDebugAnswerMode()
@@ -212,6 +223,7 @@ export function PracticeScreen({
             >
               <StoryChapterSelect
                 campaign={STORY_CAMPAIGN}
+                progress={storyProgress.chapters}
                 onBack={() => setStoryView('home')}
                 onStartChapter={(chapter) => {
                   setStoryChapter(chapter)
@@ -234,6 +246,7 @@ export function PracticeScreen({
                 engine={engine}
                 timing={timing}
                 onExit={() => setStoryView('chapters')}
+                onComplete={onStoryComplete}
               />
             </motion.div>
           )}

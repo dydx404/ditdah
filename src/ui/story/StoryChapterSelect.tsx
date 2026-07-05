@@ -1,14 +1,17 @@
 import type { Campaign, Chapter } from '@/content/stories'
+import type { StoryChapterProgress } from '@/app/storyProgress'
 import { useT } from '@/i18n'
 
 interface StoryChapterSelectProps {
   campaign: Campaign
+  progress?: readonly StoryChapterProgress[]
   onBack: () => void
   onStartChapter: (chapter: Chapter) => void
 }
 
 export function StoryChapterSelect({
   campaign,
+  progress = [],
   onBack,
   onStartChapter,
 }: StoryChapterSelectProps) {
@@ -40,6 +43,9 @@ export function StoryChapterSelect({
       <div className="grid gap-3">
         {campaign.chapters.map((chapter, index) => {
           const locked = index > 0
+          const chapterProgress = progress.find(
+            (record) => record.chapterId === chapter.id,
+          )
           return (
             <button
               key={chapter.id}
@@ -50,6 +56,8 @@ export function StoryChapterSelect({
                 'flex items-start justify-between gap-4 rounded-lg border p-4 text-left transition',
                 locked
                   ? 'cursor-not-allowed border-border/60 opacity-50'
+                  : chapterProgress
+                    ? 'border-accent/50 bg-accent/5 hover:border-accent/80'
                   : 'border-border hover:border-accent/70',
               ].join(' ')}
             >
@@ -64,8 +72,28 @@ export function StoryChapterSelect({
                   {chapter.blurb}
                 </span>
               </span>
-              <span className="shrink-0 rounded-full border border-border px-2 py-1 font-mono text-xs text-muted">
-                {locked ? t('story.chapter.locked') : t('story.chapter.start')}
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                <span className="rounded-full border border-border px-2 py-1 font-mono text-xs text-muted">
+                  {locked
+                    ? t('story.chapter.locked')
+                    : chapterProgress
+                      ? t('story.chapter.completed')
+                      : t('story.chapter.start')}
+                </span>
+                {chapterProgress && (
+                  <>
+                    <span className="font-mono text-xs text-accent">
+                      {t('story.chapter.best', {
+                        percent: Math.round(chapterProgress.bestAccuracy * 100),
+                      })}
+                    </span>
+                    <span className="font-mono text-xs text-muted/80">
+                      {t('story.chapter.plays', {
+                        count: chapterProgress.playCount,
+                      })}
+                    </span>
+                  </>
+                )}
               </span>
             </button>
           )

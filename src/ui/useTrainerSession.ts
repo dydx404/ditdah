@@ -36,6 +36,7 @@ import type {
   SessionSummary,
   Trainer,
 } from '@/core/trainer/types'
+import type { DebugAnswerMode } from './debug'
 
 export type Phase = 'idle' | 'listening' | 'feedback' | 'retry' | 'summary'
 
@@ -70,6 +71,8 @@ export interface UseTrainerSessionOptions {
   gateOnMiss?: boolean
   /** If true, play short correct/wrong UI cues after answers. */
   sounds?: boolean
+  /** Hidden dev helper for rapid loop debugging; normal scoring is unchanged by default. */
+  debugAnswerMode?: DebugAnswerMode
   /** Called after each scored answer — the app persists progress here. */
   onAnswered?: (result: AnswerResult) => void
   /** Called once when a round finishes — the app can log it to history. */
@@ -116,6 +119,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
   const wrongHoldMs = opts.wrongHoldMs ?? 1200
   const gateOnMiss = opts.gateOnMiss ?? true
   const sounds = opts.sounds ?? true
+  const debugAnswerMode = opts.debugAnswerMode ?? 'normal'
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [lastResult, setLastResult] = useState<AnswerResult | null>(null)
@@ -219,13 +223,19 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     if (textRef.current) playTone(textRef.current)
   }, [playTone])
 
+  const answerForSubmit = useCallback(
+    (received: string, prompt: Prompt) =>
+      debugAnswerMode === 'always-correct' ? prompt.text : received,
+    [debugAnswerMode],
+  )
+
   const handleAnswer = useCallback(
     (key: string) => {
       const prompt = promptRef.current
       if (!prompt) return
       promptRef.current = null // guard against a fast double keypress
 
-      const result = trainer.submit(prompt.id, key)
+      const result = trainer.submit(prompt.id, answerForSubmit(key, prompt))
 
       // Accumulate this round's stats. A group scores one attempt per position
       // (result.perChar); a single answer is one attempt for its character.
@@ -285,6 +295,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       gateOnMiss,
       cue,
       onAnswered,
+      answerForSubmit,
     ],
   )
 
@@ -294,7 +305,9 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
     (key: string) => {
       const expected = retryCharRef.current
       if (!expected) return
-      if (key.toUpperCase() !== expected) {
+      const received =
+        debugAnswerMode === 'always-correct' ? expected : key.toUpperCase()
+      if (received !== expected) {
         cue('wrong')
         return
       }
@@ -307,7 +320,7 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(advance, correctHoldMs)
     },
-    [advance, correctHoldMs, cue],
+    [advance, correctHoldMs, cue, debugAnswerMode],
   )
 
   // Group input: append into the buffer; auto-submit once it's full.
@@ -327,8 +340,10 @@ export function useTrainerSession(opts: UseTrainerSessionOptions): SessionView {
   }, [setBuf])
 
   const submitGroup = useCallback(() => {
-    if (bufferRef.current.length > 0) handleAnswer(bufferRef.current)
-  }, [handleAnswer])
+    if (bufferRef.current.length > 0 || debugAnswerMode === 'always-correct') {
+      handleAnswer(bufferRef.current)
+    }
+  }, [debugAnswerMode, handleAnswer])
 
   // Capture keys while listening (answer/type) or retrying (echo). Never during
   // the feedback flash — no typing ahead into the next prompt.

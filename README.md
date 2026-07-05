@@ -28,6 +28,9 @@ character at a time, with instant feedback and game feel.
 ### ▶ [Try it live → dydx404.github.io/ditdah](https://dydx404.github.io/ditdah/)
 No sign-up, works offline, installable. Turn your sound on and press **Start**.
 
+New to CW? Start with the **[ditdah CW Learner Guidebook](./docs/guidebook/README.md)**:
+a sound-first path from your first round to words, callsigns, QSO practice, and Story Mode.
+
 ## What's inside
 
 **Seven practice modes**, all built on one sound-first copy loop:

@@ -9,16 +9,16 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#59 — Custom text import** on `feat/custom-text-import`: Free training
-  settings text import that tokenizes into `promptPool`.
+- **#60 — QSO simulator v1** on `feat/qso-mode`: curated contact exchange
+  prompt pool wired through a QSO mode card.
 
 ## Blocked / waiting
 
-- #60 QSO is queued after Custom text lands.
+- Nothing currently blocked.
 
 ## Next
 
-- After #59, implement #60 QSO.
+- After #60, update the roadmap/status and propose the next advanced-mode issue.
 
 ## Open questions
 

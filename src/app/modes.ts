@@ -7,7 +7,12 @@
  * as they land, so the home screen grows without new plumbing.
  */
 import { DIGIT_CHARS } from './charset'
-import { CALLSIGN_POOL, COMMON_WORD_POOL, samePromptPool } from './promptPools'
+import {
+  CALLSIGN_POOL,
+  COMMON_WORD_POOL,
+  QSO_POOL,
+  samePromptPool,
+} from './promptPools'
 import type { Settings } from './settings'
 import type { MessageKey } from '@/i18n'
 
@@ -67,6 +72,17 @@ export const PRACTICE_MODES: readonly PracticeModeDef[] = [
     },
   },
   {
+    id: 'qso',
+    nameKey: 'mode.qso.name',
+    blurbKey: 'mode.qso.blurb',
+    available: true,
+    apply: {
+      promptMode: 'single',
+      charSource: 'koch',
+      promptPool: QSO_POOL,
+    },
+  },
+  {
     id: 'numbers',
     nameKey: 'mode.numbers.name',
     blurbKey: 'mode.numbers.blurb',
@@ -85,6 +101,7 @@ export function activeModeId(
   if (settings.promptPool.length > 0) {
     if (samePromptPool(settings.promptPool, COMMON_WORD_POOL)) return 'words'
     if (samePromptPool(settings.promptPool, CALLSIGN_POOL)) return 'callsigns'
+    if (samePromptPool(settings.promptPool, QSO_POOL)) return 'qso'
     return 'free'
   }
 

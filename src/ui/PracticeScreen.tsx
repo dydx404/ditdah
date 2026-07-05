@@ -79,6 +79,9 @@ export function PracticeScreen({
 }: PracticeScreenProps) {
   const t = useT()
   const debugAnswerMode = readDebugAnswerMode()
+  const promptPoolHasSpaces = settings.promptPool.some((prompt) =>
+    prompt.includes(' '),
+  )
   const session = useTrainerSession({
     trainer,
     engine,
@@ -87,6 +90,7 @@ export function PracticeScreen({
     gateOnMiss,
     sounds: answerSounds,
     debugAnswerMode,
+    allowSpaceInGroups: promptPoolHasSpaces,
     onAnswered,
     onRoundComplete,
   })
@@ -97,16 +101,20 @@ export function PracticeScreen({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
 
-  // Space/Enter as controls. Space is not a valid answer key, so it's free to
-  // mean "start" (idle), "replay" (listening), and "again" (summary) without
-  // clashing with copying.
+  // Space/Enter as controls. Pool prompts with word gaps opt into using Space
+  // as group input; otherwise Space stays a replay/start shortcut.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return
       if (e.metaKey || e.ctrlKey || e.altKey) return
       if (phase === 'idle' && (e.key === ' ' || e.key === 'Enter')) {
         e.preventDefault()
         start()
-      } else if ((phase === 'listening' || phase === 'retry') && e.key === ' ') {
+      } else if (
+        (phase === 'listening' || phase === 'retry') &&
+        e.key === ' ' &&
+        !(isGroup && promptPoolHasSpaces)
+      ) {
         e.preventDefault()
         replay()
       } else if (phase === 'summary' && (e.key === ' ' || e.key === 'Enter')) {
@@ -116,7 +124,7 @@ export function PracticeScreen({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, start, replay, again])
+  }, [phase, start, replay, again, isGroup, promptPoolHasSpaces])
 
   return (
     <div className="relative flex h-full flex-col">
@@ -268,6 +276,16 @@ export function PracticeScreen({
             />
             {isGroup && phase === 'listening' && (
               <div className="flex items-center gap-2">
+                {promptPoolHasSpaces && (
+                  <button
+                    type="button"
+                    aria-label={t('action.space')}
+                    onClick={() => session.typeChar(' ')}
+                    className="h-10 rounded-lg border border-border px-4 font-mono text-sm text-muted transition hover:text-text"
+                  >
+                    {t('action.space')}
+                  </button>
+                )}
                 <button
                   type="button"
                   aria-label={t('action.deleteLast')}
@@ -302,7 +320,9 @@ export function PracticeScreen({
               onClick={replay}
               className="rounded border border-border px-3 py-1 text-muted transition hover:text-text"
             >
-              {t('action.replaySpace')}
+              {isGroup && promptPoolHasSpaces
+                ? t('action.replay')
+                : t('action.replaySpace')}
             </button>
           )}
           {phase === 'retry' && <span>{t('practice.echoToContinue')}</span>}

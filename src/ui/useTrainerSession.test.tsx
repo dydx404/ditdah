@@ -140,6 +140,7 @@ interface SetupOptions {
   gateOnMiss?: boolean
   sounds?: boolean
   debugAnswerMode?: DebugAnswerMode
+  allowSpaceInGroups?: boolean
   onAnswered?: (r: AnswerResult) => void
   onRoundComplete?: (r: unknown) => void
 }
@@ -162,6 +163,7 @@ describe('useTrainerSession', () => {
         gateOnMiss: opts.gateOnMiss,
         sounds: opts.sounds,
         debugAnswerMode: opts.debugAnswerMode,
+        allowSpaceInGroups: opts.allowSpaceInGroups,
         onAnswered: opts.onAnswered,
         onRoundComplete: opts.onRoundComplete as never,
       }),
@@ -462,6 +464,30 @@ describe('useTrainerSession', () => {
     const r = view.result.current.lastResult
     expect(r?.correct).toBe(false)
     expect(r?.perChar?.[1]).toMatchObject({ received: '', correct: false })
+  })
+
+  it('group mode: accepts spaces when pool prompts need word gaps', async () => {
+    const { view } = setup({
+      trainer: makeFakeGroupTrainer('K M'),
+      allowSpaceInGroups: true,
+      roundLength: 1,
+    })
+    await act(async () => view.result.current.start())
+
+    press('K')
+    press(' ')
+    expect(view.result.current.buffer).toBe('K ')
+    press('M')
+
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.lastResult).toMatchObject({
+      correct: true,
+      expected: 'K M',
+      received: 'K M',
+    })
+
+    act(() => vi.advanceTimersByTime(120))
+    expect(view.result.current.roundSummary?.total).toBe(2)
   })
 
   it('debug always-correct mode can submit an empty group as correct', async () => {

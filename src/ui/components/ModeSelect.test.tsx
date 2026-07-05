@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { ModeSelect } from './ModeSelect'
 import { DEFAULT_SETTINGS } from '@/app/settings'
 import { DIGIT_CHARS } from '@/app/charset'
-import { CALLSIGN_POOL, COMMON_WORD_POOL } from '@/app/promptPools'
+import { CALLSIGN_POOL, COMMON_WORD_POOL, QSO_POOL } from '@/app/promptPools'
 
 describe('ModeSelect', () => {
   it('highlights the active mode and starts on Start', () => {
@@ -68,6 +68,13 @@ describe('ModeSelect', () => {
       promptMode: 'single',
       charSource: 'koch',
       promptPool: CALLSIGN_POOL,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /QSO/ }))
+    expect(onSelectMode).toHaveBeenLastCalledWith({
+      promptMode: 'single',
+      charSource: 'koch',
+      promptPool: QSO_POOL,
     })
   })
 

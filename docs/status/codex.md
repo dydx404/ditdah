@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#83 — Story Mode chapter 3** on `feat/story-chapter-three`: Harbor Relay
-  content and chained unlock coverage.
+- **#85 — Story Mode completion actions** on `feat/story-completion-actions`:
+  completion-screen back/next chapter flow.
 
 ## Blocked / waiting
 
@@ -18,7 +18,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #83, continue Story Mode one slice at a time: more chapters, better
+- After #85, continue Story Mode one slice at a time: more chapters, better
   mission feel, or a deliberate synced progress schema issue if Benson wants
   cross-device story state.
 

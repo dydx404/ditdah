@@ -84,6 +84,48 @@ describe('StoryScreen', () => {
       assistedLines: 0,
     })
   })
+
+  it('shows completion actions when a next chapter exists', async () => {
+    const onExit = vi.fn()
+    const onNextChapter = vi.fn()
+    render(
+      <StoryScreen
+        chapter={singleCopyChapter}
+        engine={engine}
+        timing={timing}
+        onExit={onExit}
+        onNextChapter={onNextChapter}
+      />,
+    )
+
+    await typeKeys('K')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to chapters' }))
+    expect(onExit).toHaveBeenCalledOnce()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next chapter' }))
+    expect(onNextChapter).toHaveBeenCalledOnce()
+  })
+
+  it('omits the next action on the final chapter', async () => {
+    render(
+      <StoryScreen
+        chapter={singleCopyChapter}
+        engine={engine}
+        timing={timing}
+        onExit={() => {}}
+      />,
+    )
+
+    await typeKeys('K')
+
+    expect(
+      screen.getByRole('button', { name: 'Back to chapters' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Next chapter' }),
+    ).not.toBeInTheDocument()
+  })
 })
 
 const singleCopyChapter: Chapter = {

@@ -136,6 +136,8 @@ export const zh: Partial<Messages> = {
   'story.assistHint': '复述显示的内容即可继续。',
   'story.complete': '章节完成',
   'story.summary': '抄对 {correct} / {total} · 辅助 {assisted}',
+  'story.backToChapters': '返回章节',
+  'story.nextChapter': '下一章',
 
   'history.title': '历史记录',
   'history.subtitle': '最近几轮会保存在这台设备上',

@@ -6,6 +6,7 @@ import { createTrainer } from '@/core/trainer'
 import type { ToneEngine, PlayHandle } from '@/core/audio/types'
 import type { TimingConfig } from '@/core/morse/types'
 import type { AnswerResult, Trainer } from '@/core/trainer/types'
+import type { DebugAnswerMode } from './debug'
 
 const timing: TimingConfig = { charWpm: 20, effectiveWpm: 10, toneHz: 600 }
 
@@ -138,6 +139,7 @@ interface SetupOptions {
   wrongHoldMs?: number
   gateOnMiss?: boolean
   sounds?: boolean
+  debugAnswerMode?: DebugAnswerMode
   onAnswered?: (r: AnswerResult) => void
   onRoundComplete?: (r: unknown) => void
 }
@@ -159,6 +161,7 @@ describe('useTrainerSession', () => {
         wrongHoldMs: opts.wrongHoldMs,
         gateOnMiss: opts.gateOnMiss,
         sounds: opts.sounds,
+        debugAnswerMode: opts.debugAnswerMode,
         onAnswered: opts.onAnswered,
         onRoundComplete: opts.onRoundComplete as never,
       }),
@@ -244,6 +247,40 @@ describe('useTrainerSession', () => {
     const r = view.result.current.lastResult
     expect(r?.correct).toBe(false)
     expect(view.result.current.reveal).toBe(r?.expected)
+  })
+
+  it('normal mode still scores a wrong answer as a miss', async () => {
+    const { view } = setup({ trainer: makeFakeTrainer('K') })
+    await act(async () => view.result.current.start())
+
+    act(() => view.result.current.answer('M'))
+
+    expect(view.result.current.phase).toBe('retry')
+    expect(view.result.current.lastResult).toMatchObject({
+      correct: false,
+      expected: 'K',
+      received: 'M',
+    })
+  })
+
+  it('debug always-correct mode submits the active prompt for single answers', async () => {
+    const results: AnswerResult[] = []
+    const { view } = setup({
+      trainer: makeFakeTrainer('K'),
+      debugAnswerMode: 'always-correct',
+      onAnswered: (r) => results.push(r),
+    })
+    await act(async () => view.result.current.start())
+
+    act(() => view.result.current.answer('M'))
+
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.lastResult).toMatchObject({
+      correct: true,
+      expected: 'K',
+      received: 'K',
+    })
+    expect(results[0]).toMatchObject({ correct: true, received: 'K' })
   })
 
   it('gates on a miss: never auto-advances until the char is echoed', async () => {
@@ -425,6 +462,26 @@ describe('useTrainerSession', () => {
     const r = view.result.current.lastResult
     expect(r?.correct).toBe(false)
     expect(r?.perChar?.[1]).toMatchObject({ received: '', correct: false })
+  })
+
+  it('debug always-correct mode can submit an empty group as correct', async () => {
+    const { view } = setup({
+      trainer: makeFakeGroupTrainer('KMK'),
+      debugAnswerMode: 'always-correct',
+    })
+    await act(async () => view.result.current.start())
+
+    act(() => view.result.current.submitGroup())
+
+    expect(view.result.current.phase).toBe('feedback')
+    expect(view.result.current.lastResult).toMatchObject({
+      correct: true,
+      expected: 'KMK',
+      received: 'KMK',
+    })
+    expect(view.result.current.lastResult?.perChar?.every((c) => c.correct)).toBe(
+      true,
+    )
   })
 
   it('group mode: backspace edits the buffer', async () => {

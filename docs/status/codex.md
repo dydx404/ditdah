@@ -9,7 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- _(none noted)_
+- **#53 — Dev debug answer mode**: PR #54 open on `feat/debug-answer-mode`;
+  local gates passed, waiting on Benson review/merge.
 
 ## Blocked / waiting
 
@@ -31,6 +32,8 @@ _Snapshot, not a diary. Keep it short and current._
 - UI localization extraction merged as PR #47; local gates, PR CI, main CI, and
   Pages deploy were green. The first Pages deploy attempt hit GitHub's
   transient "try again later" failure and passed on rerun.
+- Open PRs at this snapshot: #50 cloud sync and #52 free-training core. Avoid
+  building on those surfaces until Benson merges them.
 - PR #46 added the i18n system; future extraction work should consume it, not
   alter the mechanism.
 - #34 merged as PR #40; local gates, PR CI, main CI, and Pages deploy were green.

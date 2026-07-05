@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { STORY_CAMPAIGN } from '@/content/stories'
+import { STORY_CAMPAIGN, type Chapter } from '@/content/stories'
 import type { ToneEngine } from '@/core/audio/types'
 import type { TimingConfig } from '@/core/morse/types'
 import { StoryScreen } from './StoryScreen'
@@ -61,7 +61,53 @@ describe('StoryScreen', () => {
 
     expect(screen.queryByText('Maya sends your signal report.')).not.toBeInTheDocument()
   })
+
+  it('reports completion once when the chapter finishes', async () => {
+    const onComplete = vi.fn()
+    render(
+      <StoryScreen
+        chapter={singleCopyChapter}
+        engine={engine}
+        timing={timing}
+        onExit={() => {}}
+        onComplete={onComplete}
+      />,
+    )
+
+    await typeKeys('K')
+
+    expect(onComplete).toHaveBeenCalledOnce()
+    expect(onComplete).toHaveBeenCalledWith('single-copy', {
+      total: 1,
+      correct: 1,
+      accuracy: 1,
+      assistedLines: 0,
+    })
+  })
 })
+
+const singleCopyChapter: Chapter = {
+  id: 'single-copy',
+  title: 'Single Copy',
+  setting: 'Test bench',
+  blurb: 'A one-line chapter.',
+  characters: [
+    {
+      id: 'maya',
+      name: 'Maya',
+      callsign: 'W1AW',
+      avatar: 'M',
+    },
+  ],
+  lines: [
+    {
+      id: 'copy-k',
+      speaker: 'maya',
+      text: 'K',
+      mode: 'copy',
+    },
+  ],
+}
 
 async function typeKeys(text: string) {
   for (const key of text) {

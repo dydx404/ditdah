@@ -8,6 +8,7 @@ import {
   storyLinePlayableText,
   type StorySession,
   type StorySessionState,
+  type StoryChapterSummary,
   type StoryTranscriptEntry,
 } from '@/app/storySession'
 import { BufferSlots } from '@/ui/components/BufferSlots'
@@ -21,11 +22,19 @@ interface StoryScreenProps {
   engine: ToneEngine
   timing: TimingConfig
   onExit: () => void
+  onComplete?: (chapterId: string, summary: StoryChapterSummary) => void
 }
 
-export function StoryScreen({ chapter, engine, timing, onExit }: StoryScreenProps) {
+export function StoryScreen({
+  chapter,
+  engine,
+  timing,
+  onExit,
+  onComplete,
+}: StoryScreenProps) {
   const t = useT()
   const sessionRef = useRef<StorySession | null>(null)
+  const completionReportedRef = useRef(false)
   if (sessionRef.current === null) {
     sessionRef.current = createStorySession(chapter)
   }
@@ -64,10 +73,21 @@ export function StoryScreen({ chapter, engine, timing, onExit }: StoryScreenProp
     }
   }, [activeLine, playLine, state.phase])
 
-  const commitState = (next: StorySessionState, clearBuffer = true) => {
-    setState(next)
-    if (clearBuffer) setBuffer('')
-  }
+  const commitState = useCallback(
+    (next: StorySessionState, clearBuffer = true) => {
+      setState(next)
+      if (clearBuffer) setBuffer('')
+      if (
+        next.phase === 'complete' &&
+        next.summary &&
+        !completionReportedRef.current
+      ) {
+        completionReportedRef.current = true
+        onComplete?.(chapter.id, next.summary)
+      }
+    },
+    [chapter.id, onComplete],
+  )
 
   const submit = useCallback(() => {
     if (!activeLine || !canSubmit) return
@@ -81,7 +101,7 @@ export function StoryScreen({ chapter, engine, timing, onExit }: StoryScreenProp
       const next = session.submitSend(buffer)
       commitState(next, next.phase !== 'send')
     }
-  }, [activeLine, buffer, canSubmit, session, state.phase])
+  }, [activeLine, buffer, canSubmit, commitState, session, state.phase])
 
   const appendChar = useCallback(
     (char: string) => {
@@ -100,7 +120,7 @@ export function StoryScreen({ chapter, engine, timing, onExit }: StoryScreenProp
         }
       }
     },
-    [buffer, canType, expectedLength, session, state.phase],
+    [buffer, canType, commitState, expectedLength, session, state.phase],
   )
 
   const backspace = useCallback(() => {

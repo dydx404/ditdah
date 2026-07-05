@@ -37,6 +37,13 @@ import {
   loadHistory,
   type RoundRecord,
 } from '@/app/history'
+import {
+  loadStoryProgress,
+  recordStoryCompletion,
+  saveStoryProgress,
+  type StoryProgress,
+} from '@/app/storyProgress'
+import type { StoryChapterSummary } from '@/app/storySession'
 
 function App() {
   const engineRef = useRef<ToneEngine | null>(null)
@@ -69,6 +76,9 @@ function App() {
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [history, setHistory] = useState<readonly RoundRecord[]>(() =>
     loadHistory(),
+  )
+  const [storyProgress, setStoryProgress] = useState<StoryProgress>(() =>
+    loadStoryProgress(),
   )
   const initialSettingsRef = useRef(settings)
   const settingsRef = useRef(settings)
@@ -272,6 +282,22 @@ function App() {
     setHistory([])
   }, [])
 
+  const handleStoryComplete = useCallback(
+    (chapterId: string, summary: StoryChapterSummary) => {
+      setStoryProgress((current) => {
+        const next = recordStoryCompletion(current, {
+          chapterId,
+          accuracy: summary.accuracy,
+          assistedLines: summary.assistedLines,
+          completedAt: new Date().toISOString(),
+        })
+        saveStoryProgress(next)
+        return next
+      })
+    },
+    [],
+  )
+
   if (!trainer) {
     return (
       <I18nProvider locale={settings.locale}>
@@ -306,6 +332,8 @@ function App() {
         onAnswered={handleAnswered}
         onRoundComplete={handleRoundComplete}
         onClearHistory={handleClearHistory}
+        storyProgress={storyProgress}
+        onStoryComplete={handleStoryComplete}
       />
     </I18nProvider>
   )

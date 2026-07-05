@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#73 — Story Mode UI shell** on `feat/story-ui-shell`: home Story card,
-  chapter select, and playable First Contact screen.
+- **#79 — Story Mode progress** on `feat/story-progress`: local chapter
+  completion, best score, and completed chapter display.
 
 ## Blocked / waiting
 
@@ -18,8 +18,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #73, decide whether story progress is local app-layer storage or a
-  blessed synced progress schema change.
+- After #79, continue Story Mode one slice at a time: more chapter content or
+  a deliberate synced progress schema issue if Benson wants cross-device story state.
 
 ## Open questions
 

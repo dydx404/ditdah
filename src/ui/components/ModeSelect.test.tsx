@@ -13,6 +13,7 @@ describe('ModeSelect', () => {
       <ModeSelect
         settings={DEFAULT_SETTINGS}
         onSelectMode={() => {}}
+        onOpenStory={() => {}}
         onStart={onStart}
       />,
     )
@@ -32,6 +33,7 @@ describe('ModeSelect', () => {
       <ModeSelect
         settings={DEFAULT_SETTINGS}
         onSelectMode={onSelectMode}
+        onOpenStory={() => {}}
         onStart={() => {}}
       />,
     )
@@ -83,9 +85,26 @@ describe('ModeSelect', () => {
       <ModeSelect
         settings={DEFAULT_SETTINGS}
         onSelectMode={() => {}}
+        onOpenStory={() => {}}
         onStart={() => {}}
       />,
     )
     expect(screen.queryByText(/soon/i)).not.toBeInTheDocument()
+  })
+
+  it('opens Story Mode from the mode grid', () => {
+    const onOpenStory = vi.fn()
+    render(
+      <ModeSelect
+        settings={DEFAULT_SETTINGS}
+        onSelectMode={() => {}}
+        onOpenStory={onOpenStory}
+        onStart={() => {}}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Story/ }))
+
+    expect(onOpenStory).toHaveBeenCalledOnce()
   })
 })

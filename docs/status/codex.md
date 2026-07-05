@@ -9,8 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#71 — Story Mode foundation** on `feat/story-foundation`: typed story
-  content, First Contact chapter, and pure story session engine.
+- **#73 — Story Mode UI shell** on `feat/story-ui-shell`: home Story card,
+  chapter select, and playable First Contact screen.
 
 ## Blocked / waiting
 
@@ -18,7 +18,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #71, build the Story UI shell as the next slice.
+- After #73, decide whether story progress is local app-layer storage or a
+  blessed synced progress schema change.
 
 ## Open questions
 

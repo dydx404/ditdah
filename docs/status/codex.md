@@ -9,9 +9,8 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#61 — Free-training UI** on `feat/free-training-ui`: custom charset
-  settings, Free training mode card, picker presets, and trainer charset
-  plumbing after #52 landed.
+- **#56 — Numbers mode** on `feat/numbers-mode`: mode card applies the 0–9
+  custom charset now that #61 is merged.
 
 ## Blocked / waiting
 
@@ -19,8 +18,7 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## Next
 
-- After #61, implement #56 Numbers, then #55 prompt-pool foundation, then
-  #57–#60 in order.
+- After #56, implement #55 prompt-pool foundation, then #57–#60 in order.
 
 ## Open questions
 

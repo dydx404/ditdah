@@ -5,6 +5,7 @@ import {
   generateCallsignPool,
   normalizePromptPool,
   samePromptPool,
+  tokenizeCustomText,
 } from './promptPools'
 import { symbolsFor } from '@/core/morse'
 
@@ -38,6 +39,15 @@ describe('prompt pools', () => {
   it('normalizes prompt pools and drops unsupported entries', () => {
     expect(normalizePromptPool([' cq ', 'CQ', '73', '~', 'A@'])).toEqual([
       'CQ',
+      '73',
+    ])
+  })
+
+  it('tokenizes custom text into supported prompt words', () => {
+    expect(tokenizeCustomText('hello world\ncq-cq @@@ 73')).toEqual([
+      'HELLO',
+      'WORLD',
+      'CQ-CQ',
       '73',
     ])
   })

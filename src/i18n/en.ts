@@ -71,6 +71,16 @@ export const en = {
   'charset.grid': 'Character picker',
   'charset.toggleChar': 'Toggle {char}',
 
+  // Custom text import
+  'customText.title': 'Custom text',
+  'customText.hint': 'Paste text, then train on its words.',
+  'customText.inputLabel': 'Practice text',
+  'customText.placeholder': 'Paste text here',
+  'customText.readyCount': '{count} prompts ready',
+  'customText.activeCount': '{count} prompts active',
+  'customText.use': 'Use text',
+  'customText.clear': 'Clear text',
+
   // Units
   'unit.wpm': 'WPM',
   'unit.hz': 'Hz',

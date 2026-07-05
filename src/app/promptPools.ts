@@ -399,6 +399,18 @@ export function normalizePromptPool(value: unknown): string[] {
   return prompts
 }
 
+export function tokenizeCustomText(text: string): string[] {
+  return normalizePromptPool(
+    text
+      .split(/\s+/)
+      .map((token) =>
+        [...token.toUpperCase()]
+          .filter((char) => symbolsFor(char) !== undefined)
+          .join(''),
+      ),
+  )
+}
+
 export function samePromptPool(
   a: readonly string[],
   b: readonly string[],

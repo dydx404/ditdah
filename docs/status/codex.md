@@ -9,16 +9,16 @@ _Snapshot, not a diary. Keep it short and current._
 
 ## In flight
 
-- **#58 — Callsigns mode** on `feat/callsigns-mode`: generated callsign prompt
-  pool wired through the Callsigns mode card.
+- **#59 — Custom text import** on `feat/custom-text-import`: Free training
+  settings text import that tokenizes into `promptPool`.
 
 ## Blocked / waiting
 
-- #59–#60 are queued after Callsigns lands.
+- #60 QSO is queued after Custom text lands.
 
 ## Next
 
-- After #58, implement #59 Custom text, then #60 QSO.
+- After #59, implement #60 QSO.
 
 ## Open questions
 

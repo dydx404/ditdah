@@ -63,6 +63,15 @@ export const zh: Partial<Messages> = {
   'charset.grid': '字符选择器',
   'charset.toggleChar': '切换 {char}',
 
+  'customText.title': '自定义文本',
+  'customText.hint': '粘贴文本，然后用其中的词语练习。',
+  'customText.inputLabel': '练习文本',
+  'customText.placeholder': '在这里粘贴文本',
+  'customText.readyCount': '已准备 {count} 个题目',
+  'customText.activeCount': '正在使用 {count} 个题目',
+  'customText.use': '使用文本',
+  'customText.clear': '清除文本',
+
   'unit.wpm': 'WPM',
   'unit.hz': 'Hz',
   'unit.prompts': '题',

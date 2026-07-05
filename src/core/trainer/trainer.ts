@@ -20,13 +20,15 @@ export function createTrainer(config: TrainerConfig): Trainer {
   const promptMode = config.promptMode ?? 'single'
   const groupSize = config.groupSize ?? 5
   const freeCharset = normalizeCharset(config.charset)
+  const promptPool = normalizePromptPool(config.promptPool)
+  const promptPoolChars = charsFromPromptPool(promptPool)
   const rng = createRng(config.seed)
   const stats = new Map<string, MutableCharStat>()
   const resultHistory = new Map<string, boolean[]>()
   const unlockedThisSession: string[] = []
   let unlockedCount = config.initialUnlockCount
   let activePrompt: Prompt | undefined
-  let previousChar: string | undefined
+  let previousPromptText: string | undefined
   let nextPromptId = 1
 
   return {
@@ -35,10 +37,7 @@ export function createTrainer(config: TrainerConfig): Trainer {
     },
 
     nextPrompt() {
-      const text =
-        promptMode === 'group'
-          ? chooseGroup(unlockedChars(), groupSize, rng)
-          : choosePromptChar(unlockedChars(), previousChar, rng)
+      const text = nextPromptText()
       const prompt = {
         id: String(nextPromptId),
         text,
@@ -46,7 +45,7 @@ export function createTrainer(config: TrainerConfig): Trainer {
 
       nextPromptId += 1
       activePrompt = prompt
-      previousChar = text[text.length - 1]
+      previousPromptText = text
 
       return prompt
     },
@@ -60,8 +59,10 @@ export function createTrainer(config: TrainerConfig): Trainer {
       const normalizedReceived = received.toUpperCase()
       activePrompt = undefined
 
-      // Single character: score the one attempt, classic result shape.
-      if (prompt.text.length <= 1) {
+      // Single Koch/charset character: score the one attempt, classic result
+      // shape. Prompt-pool entries always use per-position scoring, even when
+      // the chosen string is one character long.
+      if (promptPool.length === 0 && prompt.text.length <= 1) {
         const correct = normalizedReceived === prompt.text
         recordAttempt(prompt.text, correct, stats, resultHistory)
         return {
@@ -72,17 +73,12 @@ export function createTrainer(config: TrainerConfig): Trainer {
         }
       }
 
-      // Group: each position is one attempt for that character, so per-char
-      // stats and the unlock window keep working. Whole prompt is correct only
-      // when every position matches.
-      const perChar: CharResult[] = []
-      for (let i = 0; i < prompt.text.length; i += 1) {
-        const expected = prompt.text[i]
-        const got = normalizedReceived[i] ?? ''
-        const positionCorrect = got === expected
-        recordAttempt(expected, positionCorrect, stats, resultHistory)
-        perChar.push({ expected, received: got, correct: positionCorrect })
-      }
+      const perChar = scorePositions(
+        prompt.text,
+        normalizedReceived,
+        stats,
+        resultHistory,
+      )
 
       return {
         correct: normalizedReceived === prompt.text,
@@ -99,6 +95,10 @@ export function createTrainer(config: TrainerConfig): Trainer {
   }
 
   function unlockedChars(): readonly string[] {
+    if (promptPool.length > 0) {
+      return promptPoolChars
+    }
+
     if (freeCharset.length > 0) {
       return freeCharset
     }
@@ -106,8 +106,20 @@ export function createTrainer(config: TrainerConfig): Trainer {
     return KOCH_ORDER.slice(0, unlockedCount)
   }
 
+  function nextPromptText(): string {
+    if (promptPool.length > 0) {
+      return choosePoolPrompt(promptPool, previousPromptText, rng)
+    }
+
+    if (promptMode === 'group') {
+      return chooseGroup(unlockedChars(), groupSize, rng)
+    }
+
+    return choosePromptChar(unlockedChars(), previousPromptText, rng)
+  }
+
   function maybeUnlockNext(): string | null {
-    if (freeCharset.length > 0) {
+    if (promptPool.length > 0 || freeCharset.length > 0) {
       return null
     }
 
@@ -155,6 +167,56 @@ function normalizeCharset(charset: readonly string[] | undefined): readonly stri
   }
 
   return sortByKochOrder(chars)
+}
+
+function normalizePromptPool(
+  promptPool: readonly string[] | undefined,
+): readonly string[] {
+  if (promptPool === undefined || promptPool.length === 0) {
+    return []
+  }
+
+  const seen = new Set<string>()
+  const prompts: string[] = []
+  for (const raw of promptPool) {
+    const text = raw.toUpperCase().trim()
+    if (
+      text.length === 0 ||
+      seen.has(text) ||
+      !containsSupportedChar(text) ||
+      !isSupportedPromptText(text)
+    ) {
+      continue
+    }
+
+    seen.add(text)
+    prompts.push(text)
+  }
+
+  return prompts
+}
+
+function charsFromPromptPool(promptPool: readonly string[]): readonly string[] {
+  const chars = new Set<string>()
+  for (const prompt of promptPool) {
+    for (const char of prompt) {
+      if (symbolsFor(char) !== undefined) {
+        chars.add(char)
+      }
+    }
+  }
+
+  return sortByKochOrder([...chars])
+}
+
+function containsSupportedChar(text: string): boolean {
+  return [...text].some((char) => symbolsFor(char) !== undefined)
+}
+
+function isSupportedPromptText(text: string): boolean {
+  return [...text].every(
+    (char) => symbolsFor(char) !== undefined || /\s/.test(char),
+  )
 }
 
 function validateConfig(config: TrainerConfig): void {
@@ -222,6 +284,40 @@ function choosePromptChar(
   const index = Math.floor(rng() * candidates.length)
 
   return candidates[index]
+}
+
+function choosePoolPrompt(
+  promptPool: readonly string[],
+  previousPromptText: string | undefined,
+  rng: () => number,
+): string {
+  const candidates =
+    promptPool.length > 1 && previousPromptText !== undefined
+      ? promptPool.filter((prompt) => prompt !== previousPromptText)
+      : promptPool
+  const index = Math.floor(rng() * candidates.length)
+
+  return candidates[index]
+}
+
+function scorePositions(
+  expectedText: string,
+  receivedText: string,
+  stats: Map<string, MutableCharStat>,
+  resultHistory: Map<string, boolean[]>,
+): CharResult[] {
+  const perChar: CharResult[] = []
+  for (let i = 0; i < expectedText.length; i += 1) {
+    const expected = expectedText[i]
+    const got = receivedText[i] ?? ''
+    const positionCorrect = got === expected
+    if (symbolsFor(expected) !== undefined) {
+      recordAttempt(expected, positionCorrect, stats, resultHistory)
+    }
+    perChar.push({ expected, received: got, correct: positionCorrect })
+  }
+
+  return perChar
 }
 
 function recordAttempt(

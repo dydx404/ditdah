@@ -293,6 +293,96 @@ describe('createTrainer — free training charset', () => {
   })
 })
 
+describe('createTrainer — prompt pool', () => {
+  it('draws whole prompts from the pool and avoids immediate repeats', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      promptPool: ['cq', '73', 'rst'],
+    })
+    const texts = promptTexts(trainer, 50)
+
+    expect(new Set(texts)).toEqual(new Set(['CQ', '73', 'RST']))
+    for (let index = 1; index < texts.length; index += 1) {
+      expect(texts[index]).not.toBe(texts[index - 1])
+    }
+  })
+
+  it('scores prompt-pool entries per position', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      promptPool: ['KM'],
+    })
+    const prompt = trainer.nextPrompt()
+
+    const result = trainer.submit(prompt.id, 'KX')
+
+    expect(result).toMatchObject({
+      correct: false,
+      expected: 'KM',
+      received: 'KX',
+      unlocked: null,
+      perChar: [
+        { expected: 'K', received: 'K', correct: true },
+        { expected: 'M', received: 'X', correct: false },
+      ],
+    })
+    expect(trainer.summary().perChar).toEqual([
+      { char: 'K', attempts: 1, correct: 1, accuracy: 1 },
+      { char: 'M', attempts: 1, correct: 0, accuracy: 0 },
+    ])
+  })
+
+  it('does not unlock Koch characters in prompt-pool mode', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      promptPool: ['M'],
+    })
+
+    for (let count = 0; count < 10; count += 1) {
+      const prompt = trainer.nextPrompt()
+      const result = trainer.submit(prompt.id, prompt.text)
+
+      expect(result.unlocked).toBeNull()
+      expect(result.perChar).toEqual([
+        { expected: 'M', received: 'M', correct: true },
+      ])
+    }
+
+    expect(trainer.unlockedChars()).toEqual(['M'])
+    expect(trainer.summary().unlockedThisSession).toEqual([])
+  })
+
+  it('returns distinct prompt-pool characters in Koch order for the keypad', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      promptPool: ['A5', 'SK', 'A'],
+    })
+
+    expect(trainer.unlockedChars()).toEqual(['K', 'S', 'A', '5'])
+  })
+
+  it('lets promptPool take precedence over charset and group generation', () => {
+    const trainer = createTrainer({
+      ...baseConfig,
+      promptMode: 'group',
+      groupSize: 6,
+      charset: ['E'],
+      promptPool: ['KM'],
+    })
+
+    expect(trainer.nextPrompt().text).toBe('KM')
+  })
+
+  it('keeps existing behavior when promptPool is absent, empty, or invalid', () => {
+    expect(promptTexts(createTrainer({ ...baseConfig, promptPool: [] }), 20)).toEqual(
+      promptTexts(createTrainer(baseConfig), 20),
+    )
+    expect(
+      promptTexts(createTrainer({ ...baseConfig, promptPool: ['~', ' '] }), 20),
+    ).toEqual(promptTexts(createTrainer(baseConfig), 20))
+  })
+})
+
 /** Flip the first character to the other unlocked one (K<->M). */
 function swapFirst(text: string): string {
   const other = text[0] === 'K' ? 'M' : 'K'

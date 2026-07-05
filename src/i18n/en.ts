@@ -16,6 +16,8 @@ export const en = {
   'mode.learn.blurb': 'Letters by ear, one at a time — the Koch path.',
   'mode.groups.name': 'Copy groups',
   'mode.groups.blurb': 'Random runs from your unlocked set.',
+  'mode.free.name': 'Free training',
+  'mode.free.blurb': 'Choose exactly which characters appear.',
   'mode.words.name': 'Words',
   'mode.words.blurb': 'Copy real words.',
   'mode.callsigns.name': 'Callsigns',
@@ -56,6 +58,18 @@ export const en = {
   'settings.patterns': 'Show dit/dah patterns',
   'settings.patternsHint':
     'Off by default — learning by ear is the point. Turn on for a visual reference.',
+
+  // Custom character training
+  'charset.title': 'Training characters',
+  'charset.hint': '{count} selected for free training.',
+  'charset.presets': 'Character presets',
+  'charset.allLetters': 'All letters',
+  'charset.numbers': 'Numbers',
+  'charset.punctuation': 'Punctuation',
+  'charset.unlocked': 'Unlocked',
+  'charset.weakSpots': 'Weak-spots',
+  'charset.grid': 'Character picker',
+  'charset.toggleChar': 'Toggle {char}',
 
   // Units
   'unit.wpm': 'WPM',

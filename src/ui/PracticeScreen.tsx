@@ -13,6 +13,7 @@ import { normalizeSettings } from '@/app/settings'
 import type { TimingConfig } from '@/core/morse/types'
 import type { ToneEngine } from '@/core/audio/types'
 import type { AnswerResult, Trainer } from '@/core/trainer/types'
+import type { CharProgress } from '@/core/storage/types'
 import { useTrainerSession } from './useTrainerSession'
 import { StatsBar } from './components/StatsBar'
 import { ListeningIndicator } from './components/ListeningIndicator'
@@ -43,6 +44,10 @@ interface PracticeScreenProps {
   answerSounds: boolean
   /** Cloud account + sync controls (undefined = sync UI hidden). */
   account?: AccountState
+  /** Lifetime-ish stats for custom charset presets. */
+  charStats?: Readonly<Record<string, CharProgress>>
+  /** Koch-progress characters used by the custom picker "Unlocked" preset. */
+  unlockedPresetChars?: readonly string[]
   /** Current daily streak (consecutive days practiced). */
   streak?: number
   /** Recent completed rounds, newest first. */
@@ -64,6 +69,8 @@ export function PracticeScreen({
   gateOnMiss,
   answerSounds,
   account,
+  charStats = {},
+  unlockedPresetChars,
   streak,
   history = [],
   onAnswered,
@@ -120,6 +127,8 @@ export function PracticeScreen({
         onSettingsChange={onSettingsChange}
         onClose={() => setSettingsOpen(false)}
         account={account}
+        unlockedChars={unlockedPresetChars ?? session.unlocked}
+        charStats={charStats}
       />
       <HistoryPanel
         open={historyOpen}

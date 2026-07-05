@@ -35,7 +35,13 @@ describe('ModeSelect', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: /Copy groups/ }))
-    expect(onSelectMode).toHaveBeenCalledWith({ promptMode: 'group' })
+    expect(onSelectMode).toHaveBeenCalledWith({
+      promptMode: 'group',
+      charSource: 'koch',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Free training/ }))
+    expect(onSelectMode).toHaveBeenLastCalledWith({ charSource: 'custom' })
   })
 
   it('disables unbuilt modes', () => {

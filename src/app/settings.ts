@@ -1,4 +1,9 @@
 import { DEFAULT_TIMING } from './config'
+import {
+  DEFAULT_CUSTOM_CHARSET,
+  normalizeCustomCharset,
+  type CharSource,
+} from './charset'
 import { detectLocale, isLocale, type Locale } from '@/i18n/messages'
 
 const SETTINGS_KEY = 'ditdah:settings'
@@ -18,6 +23,10 @@ export interface Settings {
   readonly promptMode: 'single' | 'group'
   /** Characters per prompt in group mode (2–7). */
   readonly groupSize: number
+  /** Koch progression or an explicit learner-selected character set. */
+  readonly charSource: CharSource
+  /** Explicit character set for free training mode. */
+  readonly customCharset: readonly string[]
   /** Keep a missed prompt gated until the learner echoes it correctly. */
   readonly strictGate: boolean
   /** Play short correct/wrong UI answer cues. */
@@ -37,6 +46,8 @@ export const DEFAULT_SETTINGS: Settings = {
   locale: 'en',
   promptMode: 'single',
   groupSize: 5,
+  charSource: 'koch',
+  customCharset: DEFAULT_CUSTOM_CHARSET,
   strictGate: true,
   answerSounds: true,
   showPatterns: false,
@@ -116,6 +127,8 @@ export function normalizeSettings(value: Partial<Settings>): Settings {
       2,
       7,
     ),
+    charSource: value.charSource === 'custom' ? 'custom' : 'koch',
+    customCharset: normalizeCustomCharset(value.customCharset),
     strictGate: value.strictGate !== false,
     answerSounds: value.answerSounds !== false,
     showPatterns: value.showPatterns === true,

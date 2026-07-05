@@ -26,8 +26,11 @@ import {
   signOut,
   type AuthUser,
 } from '@/app/cloudSync'
-import { DEFAULT_TRAINER } from '@/app/config'
 import { loadSettings, saveSettings, type Settings } from '@/app/settings'
+import {
+  trainerConfigForSettings,
+  unlockedCharsForProgress,
+} from '@/app/trainerConfig'
 import {
   appendRound,
   clearHistory,
@@ -69,6 +72,7 @@ function App() {
   )
   const initialSettingsRef = useRef(settings)
   const settingsRef = useRef(settings)
+  const trainerSettingsRef = useRef(settings)
   useEffect(() => {
     settingsRef.current = settings
   }, [settings])
@@ -83,30 +87,31 @@ function App() {
 
   const buildTrainer = useCallback(
     (unlockedCount: number, s: Settings): Trainer =>
-      createTrainer({
-        ...DEFAULT_TRAINER,
-        timing: {
-          charWpm: s.charWpm,
-          effectiveWpm: s.effectiveWpm,
-          toneHz: s.toneHz,
-        },
-        initialUnlockCount: Math.max(
-          DEFAULT_TRAINER.initialUnlockCount,
+      createTrainer(
+        trainerConfigForSettings(
           unlockedCount,
+          s,
+          Math.floor(Math.random() * 0xffffffff),
         ),
-        promptMode: s.promptMode,
-        groupSize: s.groupSize,
-        seed: Math.floor(Math.random() * 0xffffffff),
-      }),
+      ),
     [],
+  )
+
+  const installTrainer = useCallback(
+    (unlockedCount: number, s: Settings) => {
+      trainerSettingsRef.current = s
+      setTrainer(buildTrainer(unlockedCount, s))
+    },
+    [buildTrainer, setTrainer],
   )
 
   // The up-to-date local snapshot (base + this session), used for sync.
   const currentLocalProgress = useCallback((): Progress => {
     const tr = trainerRef.current
+    const trainerSettings = trainerSettingsRef.current
     return mergeSessionIntoProgress(
       baseRef.current,
-      tr ? tr.unlockedChars() : (baseRef.current?.unlocked ?? []),
+      unlockedCharsForProgress(baseRef.current?.unlocked, tr, trainerSettings),
       tr ? tr.summary().perChar : [],
       { streak: streakRef.current },
     )
@@ -139,13 +144,13 @@ function App() {
       setStreakCount(merged.streak.count)
       await store.save(merged)
       await sync.push(merged)
-      setTrainer(buildTrainer(merged.unlocked.length, settingsRef.current))
+      installTrainer(merged.unlocked.length, settingsRef.current)
     } catch {
       // Sync is best-effort; local practice continues regardless.
     } finally {
       setSyncing(false)
     }
-  }, [currentLocalProgress, buildTrainer, setTrainer])
+  }, [currentLocalProgress, installTrainer])
 
   useEffect(() => {
     userRef.current = user
@@ -170,22 +175,28 @@ function App() {
       baseRef.current = base
       streakRef.current = base?.streak ?? null
       setStreakCount(base?.streak?.count ?? 0)
-      setTrainer(buildTrainer(base?.unlocked.length ?? 0, initialSettingsRef.current))
+      installTrainer(base?.unlocked.length ?? 0, initialSettingsRef.current)
     })
     return () => {
       cancelled = true
     }
-  }, [buildTrainer, setTrainer])
+  }, [installTrainer])
 
   // Prompt mode / group size are baked into the trainer at creation, so switching
   // them rebuilds it. Fold the outgoing session's stats into base first, or a
   // subsequent save would drop everything copied before the switch.
+  const customCharsetKey = settings.customCharset.join('')
   useEffect(() => {
     const outgoing = trainerRef.current
     if (!outgoing) return
+    const outgoingSettings = trainerSettingsRef.current
     const folded = mergeSessionIntoProgress(
       baseRef.current,
-      outgoing.unlockedChars(),
+      unlockedCharsForProgress(
+        baseRef.current?.unlocked,
+        outgoing,
+        outgoingSettings,
+      ),
       outgoing.summary().perChar,
       { streak: streakRef.current },
     )
@@ -193,8 +204,15 @@ function App() {
     streakRef.current = folded.streak
     void storeRef.current?.save(folded)
     schedulePush(folded)
-    setTrainer(buildTrainer(outgoing.unlockedChars().length, settingsRef.current))
-  }, [settings.promptMode, settings.groupSize, buildTrainer, setTrainer, schedulePush])
+    installTrainer(folded.unlocked.length, settingsRef.current)
+  }, [
+    settings.promptMode,
+    settings.groupSize,
+    settings.charSource,
+    customCharsetKey,
+    installTrainer,
+    schedulePush,
+  ])
 
   useEffect(() => {
     engineRef.current?.setVolume(settings.volume)
@@ -205,7 +223,11 @@ function App() {
     if (!trainer || !store) return
     const next = mergeSessionIntoProgress(
       baseRef.current,
-      trainer.unlockedChars(),
+      unlockedCharsForProgress(
+        baseRef.current?.unlocked,
+        trainer,
+        trainerSettingsRef.current,
+      ),
       trainer.summary().perChar,
       { streak: streakRef.current },
     )
@@ -256,6 +278,8 @@ function App() {
     )
   }
 
+  const progressSnapshot = currentLocalProgress()
+
   return (
     <I18nProvider locale={settings.locale}>
       <PracticeScreen
@@ -273,6 +297,8 @@ function App() {
           onSignIn: handleSignIn,
           onSignOut: handleSignOut,
         }}
+        charStats={progressSnapshot.charStats}
+        unlockedPresetChars={progressSnapshot.unlocked}
         streak={streakCount}
         history={history}
         onAnswered={handleAnswered}

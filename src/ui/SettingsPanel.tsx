@@ -1,7 +1,9 @@
 import type { Settings } from '@/app/settings'
 import { normalizeSettings } from '@/app/settings'
+import type { CharProgress } from '@/core/storage/types'
 import { LOCALES, useT } from '@/i18n'
 import { AccountSection, type AccountState } from './AccountSection'
+import { CharacterPicker } from './components/CharacterPicker'
 
 interface SettingsPanelProps {
   open: boolean
@@ -9,6 +11,8 @@ interface SettingsPanelProps {
   onSettingsChange: (settings: Settings) => void
   onClose: () => void
   account?: AccountState
+  unlockedChars?: readonly string[]
+  charStats?: Readonly<Record<string, CharProgress>>
 }
 
 export function SettingsPanel({
@@ -17,6 +21,8 @@ export function SettingsPanel({
   onSettingsChange,
   onClose,
   account,
+  unlockedChars = [],
+  charStats = {},
 }: SettingsPanelProps) {
   const t = useT()
   if (!open) {
@@ -58,6 +64,14 @@ export function SettingsPanel({
 
         <div className="flex flex-col gap-6">
           {account && <AccountSection {...account} />}
+          {settings.charSource === 'custom' && (
+            <CharacterPicker
+              value={settings.customCharset}
+              unlockedChars={unlockedChars}
+              charStats={charStats}
+              onChange={(customCharset) => update({ customCharset })}
+            />
+          )}
           <div className="flex flex-col gap-2">
             <span className="font-mono text-sm text-muted">
               {t('settings.language')}

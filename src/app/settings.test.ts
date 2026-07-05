@@ -10,6 +10,7 @@ import {
   saveSettings,
   type Settings,
 } from './settings'
+import { DEFAULT_CUSTOM_CHARSET } from './charset'
 import { SettingsPanel } from '@/ui/SettingsPanel'
 
 const SETTINGS_KEY = 'ditdah:settings'
@@ -41,6 +42,8 @@ describe('settings persistence', () => {
       locale: 'zh',
       promptMode: 'group',
       groupSize: 4,
+      charSource: 'custom',
+      customCharset: ['A', 'B', '1'],
       strictGate: false,
       answerSounds: false,
       showPatterns: true,
@@ -72,6 +75,8 @@ describe('settings persistence', () => {
       locale: 'en',
       promptMode: 'single',
       groupSize: 5,
+      charSource: 'koch',
+      customCharset: DEFAULT_CUSTOM_CHARSET,
       strictGate: true,
       answerSounds: true,
       showPatterns: false,
@@ -95,6 +100,26 @@ describe('settings persistence', () => {
     expect(normalizeSettings({ groupSize: 99 }).groupSize).toBe(7)
     expect(normalizeSettings({ groupSize: 1 }).groupSize).toBe(2)
     expect(normalizeSettings({}).groupSize).toBe(5)
+  })
+
+  it('defaults to Koch source and validates custom charsets', () => {
+    expect(normalizeSettings({}).charSource).toBe('koch')
+    expect(normalizeSettings({}).customCharset).toEqual(DEFAULT_CUSTOM_CHARSET)
+    expect(
+      normalizeSettings({
+        charSource: 'custom',
+        customCharset: ['m', 'A', 'm', '~', '5'],
+      }),
+    ).toMatchObject({
+      charSource: 'custom',
+      customCharset: ['A', 'M', '5'],
+    })
+    expect(
+      normalizeSettings({
+        charSource: 'custom',
+        customCharset: [],
+      }).customCharset,
+    ).toEqual(DEFAULT_CUSTOM_CHARSET)
   })
 
   it('defaults showPatterns off and coerces non-booleans to false', () => {
@@ -164,10 +189,24 @@ describe('SettingsPanel', () => {
     expect(loadSettings().strictGate).toBe(false)
     expect(loadSettings().answerSounds).toBe(false)
   })
+
+  it('renders the character picker in custom mode', () => {
+    render(createElement(SettingsHarness, { custom: true }))
+
+    expect(screen.getByText('Training characters')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle A' }))
+    expect(loadSettings().customCharset).toContain('A')
+  })
 })
 
-function SettingsHarness() {
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+function SettingsHarness({ custom = false }: { custom?: boolean }) {
+  const [settings, setSettings] = useState(
+    normalizeSettings({
+      ...DEFAULT_SETTINGS,
+      charSource: custom ? 'custom' : 'koch',
+      customCharset: ['K', 'M'],
+    }),
+  )
 
   return createElement(SettingsPanel, {
     open: true,
@@ -177,6 +216,8 @@ function SettingsHarness() {
       setSettings(next)
       saveSettings(next)
     },
+    unlockedChars: ['K', 'M', 'U'],
+    charStats: { K: { attempts: 4, correct: 2 } },
   })
 }
 

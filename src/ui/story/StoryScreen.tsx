@@ -23,6 +23,7 @@ interface StoryScreenProps {
   timing: TimingConfig
   onExit: () => void
   onComplete?: (chapterId: string, summary: StoryChapterSummary) => void
+  onNextChapter?: () => void
 }
 
 export function StoryScreen({
@@ -31,6 +32,7 @@ export function StoryScreen({
   timing,
   onExit,
   onComplete,
+  onNextChapter,
 }: StoryScreenProps) {
   const t = useT()
   const sessionRef = useRef<StorySession | null>(null)
@@ -212,6 +214,24 @@ export function StoryScreen({
               assisted: state.summary.assistedLines,
             })}
           </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <button
+              type="button"
+              onClick={onExit}
+              className="rounded-lg border border-border px-4 py-2 font-mono text-sm text-muted transition hover:text-text"
+            >
+              {t('story.backToChapters')}
+            </button>
+            {onNextChapter && (
+              <button
+                type="button"
+                onClick={onNextChapter}
+                className="rounded-lg bg-accent px-4 py-2 font-mono text-sm font-semibold text-bg transition hover:brightness-110"
+              >
+                {t('story.nextChapter')}
+              </button>
+            )}
+          </div>
         </div>
       )}
 

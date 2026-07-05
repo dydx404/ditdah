@@ -152,6 +152,8 @@ export const en = {
   'story.assistHint': 'Echo the revealed line to continue.',
   'story.complete': 'chapter complete',
   'story.summary': '{correct} / {total} copied · {assisted} assisted',
+  'story.backToChapters': 'Back to chapters',
+  'story.nextChapter': 'Next chapter',
 
   // History
   'history.title': 'History',

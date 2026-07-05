@@ -118,6 +118,11 @@ export function PracticeScreen({
     'home',
   )
   const [storyChapter, setStoryChapter] = useState<Chapter | null>(null)
+  const storyChapterIndex = storyChapter
+    ? STORY_CAMPAIGN.chapters.findIndex((chapter) => chapter.id === storyChapter.id)
+    : -1
+  const nextStoryChapter =
+    storyChapterIndex >= 0 ? STORY_CAMPAIGN.chapters[storyChapterIndex + 1] : undefined
 
   // Space/Enter as controls. Pool prompts with word gaps opt into using Space
   // as group input; otherwise Space stays a replay/start shortcut.
@@ -235,7 +240,7 @@ export function PracticeScreen({
 
           {phase === 'idle' && storyView === 'playing' && storyChapter && (
             <motion.div
-              key="story-playing"
+              key={`story-playing-${storyChapter.id}`}
               className="flex h-full w-full flex-col items-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -247,6 +252,11 @@ export function PracticeScreen({
                 timing={timing}
                 onExit={() => setStoryView('chapters')}
                 onComplete={onStoryComplete}
+                onNextChapter={
+                  nextStoryChapter
+                    ? () => setStoryChapter(nextStoryChapter)
+                    : undefined
+                }
               />
             </motion.div>
           )}

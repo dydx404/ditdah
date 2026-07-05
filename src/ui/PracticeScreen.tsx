@@ -25,10 +25,12 @@ import { AnswerKeypad } from './components/AnswerKeypad'
 import { UnlockToast } from './components/UnlockToast'
 import { CharacterReference } from './components/CharacterReference'
 import { SettingsPanel } from './SettingsPanel'
+import type { AccountState } from './AccountSection'
 import { HistoryPanel } from './HistoryPanel'
 import { roundsToday, type RoundRecord } from '@/app/history'
 import type { RoundSummary } from './useTrainerSession'
 import { useT } from '@/i18n'
+import { readDebugAnswerMode } from './debug'
 
 interface PracticeScreenProps {
   trainer: Trainer
@@ -39,6 +41,8 @@ interface PracticeScreenProps {
   roundLength: number
   gateOnMiss: boolean
   answerSounds: boolean
+  /** Cloud account + sync controls (undefined = sync UI hidden). */
+  account?: AccountState
   /** Current daily streak (consecutive days practiced). */
   streak?: number
   /** Recent completed rounds, newest first. */
@@ -59,6 +63,7 @@ export function PracticeScreen({
   roundLength,
   gateOnMiss,
   answerSounds,
+  account,
   streak,
   history = [],
   onAnswered,
@@ -66,6 +71,7 @@ export function PracticeScreen({
   onClearHistory,
 }: PracticeScreenProps) {
   const t = useT()
+  const debugAnswerMode = readDebugAnswerMode()
   const session = useTrainerSession({
     trainer,
     engine,
@@ -73,11 +79,14 @@ export function PracticeScreen({
     roundLength,
     gateOnMiss,
     sounds: answerSounds,
+    debugAnswerMode,
     onAnswered,
     onRoundComplete,
   })
   const { phase, start, replay, again } = session
   const isGroup = session.promptLength > 1
+  const canSubmitGroup =
+    session.buffer.length > 0 || debugAnswerMode === 'always-correct'
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
 
@@ -110,6 +119,7 @@ export function PracticeScreen({
         settings={settings}
         onSettingsChange={onSettingsChange}
         onClose={() => setSettingsOpen(false)}
+        account={account}
       />
       <HistoryPanel
         open={historyOpen}
@@ -261,7 +271,7 @@ export function PracticeScreen({
                 <button
                   type="button"
                   onClick={session.submitGroup}
-                  disabled={session.buffer.length === 0}
+                  disabled={!canSubmitGroup}
                   className="h-10 rounded-lg bg-accent px-5 font-mono text-sm font-semibold text-bg transition hover:brightness-110 disabled:opacity-40"
                 >
                   {t('action.submit')}

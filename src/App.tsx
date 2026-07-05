@@ -18,6 +18,14 @@ import { PracticeScreen } from '@/ui/PracticeScreen'
 import { I18nProvider, useT } from '@/i18n'
 import type { RoundSummary } from '@/ui/useTrainerSession'
 import { mergeSessionIntoProgress } from '@/app/progress'
+import { mergeProgress, type SyncClient } from '@/app/sync'
+import {
+  createSupabaseSyncClient,
+  onAuthChange,
+  signInWithEmail,
+  signOut,
+  type AuthUser,
+} from '@/app/cloudSync'
 import { DEFAULT_TRAINER } from '@/app/config'
 import { loadSettings, saveSettings, type Settings } from '@/app/settings'
 import {
@@ -44,6 +52,17 @@ function App() {
     setTrainerState(next)
   }, [])
   const [streakCount, setStreakCount] = useState(0)
+
+  // Cloud sync (optional): anonymous use never touches any of this.
+  const syncRef = useRef<SyncClient | null>(null)
+  if (!syncRef.current) syncRef.current = createSupabaseSyncClient()
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const userRef = useRef<AuthUser | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const reconciledUserRef = useRef<string | null>(null)
+  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const latestProgressRef = useRef<Progress | null>(null)
+
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [history, setHistory] = useState<readonly RoundRecord[]>(() =>
     loadHistory(),
@@ -82,6 +101,68 @@ function App() {
     [],
   )
 
+  // The up-to-date local snapshot (base + this session), used for sync.
+  const currentLocalProgress = useCallback((): Progress => {
+    const tr = trainerRef.current
+    return mergeSessionIntoProgress(
+      baseRef.current,
+      tr ? tr.unlockedChars() : (baseRef.current?.unlocked ?? []),
+      tr ? tr.summary().perChar : [],
+      { streak: streakRef.current },
+    )
+  }, [])
+
+  // Debounced upload — coalesce the flurry of per-answer saves into one push.
+  const schedulePush = useCallback((progress: Progress) => {
+    if (!userRef.current) return
+    latestProgressRef.current = progress
+    if (pushTimerRef.current) clearTimeout(pushTimerRef.current)
+    pushTimerRef.current = setTimeout(() => {
+      const p = latestProgressRef.current
+      if (p) void syncRef.current?.push(p).catch(() => {})
+    }, 4000)
+  }, [])
+
+  // On sign-in: merge local ↔ remote, save both, and rebuild the trainer so its
+  // (now folded) session resets and any newly synced unlocks take effect.
+  const reconcile = useCallback(async () => {
+    const sync = syncRef.current
+    const store = storeRef.current
+    if (!sync || !store) return
+    setSyncing(true)
+    try {
+      const local = currentLocalProgress()
+      const remote = await sync.pull()
+      const merged = mergeProgress(local, remote) ?? local
+      baseRef.current = merged
+      streakRef.current = merged.streak
+      setStreakCount(merged.streak.count)
+      await store.save(merged)
+      await sync.push(merged)
+      setTrainer(buildTrainer(merged.unlocked.length, settingsRef.current))
+    } catch {
+      // Sync is best-effort; local practice continues regardless.
+    } finally {
+      setSyncing(false)
+    }
+  }, [currentLocalProgress, buildTrainer, setTrainer])
+
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+
+  useEffect(() => onAuthChange(setUser), [])
+
+  useEffect(() => {
+    if (!user) {
+      reconciledUserRef.current = null
+      return
+    }
+    if (!trainer || reconciledUserRef.current === user.id) return
+    reconciledUserRef.current = user.id
+    void reconcile()
+  }, [user, trainer, reconcile])
+
   useEffect(() => {
     let cancelled = false
     void storeRef.current?.load().then((base) => {
@@ -111,8 +192,9 @@ function App() {
     baseRef.current = folded
     streakRef.current = folded.streak
     void storeRef.current?.save(folded)
+    schedulePush(folded)
     setTrainer(buildTrainer(outgoing.unlockedChars().length, settingsRef.current))
-  }, [settings.promptMode, settings.groupSize, buildTrainer, setTrainer])
+  }, [settings.promptMode, settings.groupSize, buildTrainer, setTrainer, schedulePush])
 
   useEffect(() => {
     engineRef.current?.setVolume(settings.volume)
@@ -130,11 +212,23 @@ function App() {
     streakRef.current = next.streak
     setStreakCount(next.streak.count)
     void store.save(next)
-  }, [trainer])
+    schedulePush(next)
+  }, [trainer, schedulePush])
 
   const handleSettingsChange = useCallback((next: Settings) => {
     setSettings(next)
     saveSettings(next)
+  }, [])
+
+  const handleSignIn = useCallback(async (email: string) => {
+    await signInWithEmail(
+      email,
+      window.location.origin + window.location.pathname,
+    )
+  }, [])
+
+  const handleSignOut = useCallback(() => {
+    void signOut()
   }, [])
 
   const handleRoundComplete = useCallback((summary: RoundSummary) => {
@@ -173,6 +267,12 @@ function App() {
         roundLength={settings.roundLength}
         gateOnMiss={settings.strictGate}
         answerSounds={settings.answerSounds}
+        account={{
+          user,
+          syncing,
+          onSignIn: handleSignIn,
+          onSignOut: handleSignOut,
+        }}
         streak={streakCount}
         history={history}
         onAnswered={handleAnswered}
